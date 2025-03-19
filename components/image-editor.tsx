@@ -7,6 +7,7 @@ import { Toolbar } from "./toolbar"
 import { Navbar } from "./navbar"
 import { SidebarPanel } from "./sidebar-panel"
 import { cn } from "@/lib/utils"
+import { HorizontalToolbar } from "./horizontal-toolbar"
 
 export function ImageEditor() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -17,6 +18,7 @@ export function ImageEditor() {
   const [fabricLoaded, setFabricLoaded] = useState(false)
   const [selectedObject, setSelectedObject] = useState<any>(null)
   const fabricRef = useRef<any>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // Load Fabric.js once at component mount
   useEffect(() => {
@@ -46,7 +48,7 @@ export function ImageEditor() {
       // Create canvas instance - adjust for navbar height (48px) and sidebar width (256px)
       const fabricCanvas = new fabric.Canvas(canvasRef.current, {
         width: window.innerWidth - 56 - 256, // Left toolbar (56px) + Right sidebar (256px)
-        height: window.innerHeight - 48, // Navbar height (48px)
+        height: window.innerHeight - 48 - 48, // Navbar height (48px) + Horizontal toolbar (48px)
         backgroundColor: "#f5f5f5",
       })
 
@@ -72,8 +74,9 @@ export function ImageEditor() {
 
       // Handle window resize
       const handleResize = () => {
-        fabricCanvas.setWidth(window.innerWidth - 56 - 256)
-        fabricCanvas.setHeight(window.innerHeight - 48)
+        const sidebarWidth = isSidebarOpen ? 256 : 0
+        fabricCanvas.setWidth(window.innerWidth - 56 - sidebarWidth)
+        fabricCanvas.setHeight(window.innerHeight - 48 - 48) // Account for navbar and horizontal toolbar
         fabricCanvas.renderAll()
       }
 
@@ -300,6 +303,93 @@ export function ImageEditor() {
     }
   }
 
+  const handleColorChange = (color: string) => {
+    if (!canvas) return
+
+    if (canvas.isDrawingMode) {
+      // Update brush color
+      canvas.freeDrawingBrush.color = color
+    } else if (selectedObject) {
+      // Update selected object color
+      if (selectedObject.type === "i-text" || selectedObject.type === "text") {
+        selectedObject.set("fill", color)
+      } else {
+        selectedObject.set("fill", color)
+      }
+      canvas.renderAll()
+      saveState()
+    }
+  }
+
+  const handleBrushSizeChange = (size: number) => {
+    if (!canvas) return
+
+    if (canvas.isDrawingMode) {
+      canvas.freeDrawingBrush.width = size
+    }
+  }
+
+  const handleOpacityChange = (opacity: number) => {
+    if (!canvas || !selectedObject) return
+
+    selectedObject.set("opacity", opacity)
+    canvas.renderAll()
+    saveState()
+  }
+
+  const handleFontChange = (font: string) => {
+    if (!canvas || !selectedObject) return
+
+    if (selectedObject.type === "i-text" || selectedObject.type === "text") {
+      selectedObject.set("fontFamily", font)
+      canvas.renderAll()
+      saveState()
+    }
+  }
+
+  const handleTextStyleChange = (style: string) => {
+    if (!canvas || !selectedObject) return
+
+    if (selectedObject.type === "i-text" || selectedObject.type === "text") {
+      switch (style) {
+        case "bold":
+          selectedObject.set("fontWeight", selectedObject.fontWeight === "bold" ? "normal" : "bold")
+          break
+        case "italic":
+          selectedObject.set("fontStyle", selectedObject.fontStyle === "italic" ? "normal" : "italic")
+          break
+        case "underline":
+          selectedObject.set("underline", !selectedObject.underline)
+          break
+      }
+      canvas.renderAll()
+      saveState()
+    }
+  }
+
+  const handleTextAlignChange = (align: string) => {
+    if (!canvas || !selectedObject) return
+
+    if (selectedObject.type === "i-text" || selectedObject.type === "text") {
+      selectedObject.set("textAlign", align)
+      canvas.renderAll()
+      saveState()
+    }
+  }
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev)
+  }
+
+  // Add a useEffect to update canvas size when sidebar state changes
+  useEffect(() => {
+    if (!canvas) return
+
+    const sidebarWidth = isSidebarOpen ? 256 : 0
+    canvas.setWidth(window.innerWidth - 56 - sidebarWidth)
+    canvas.renderAll()
+  }, [isSidebarOpen, canvas])
+
   if (!fabricLoaded) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -310,7 +400,22 @@ export function ImageEditor() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Navbar onSave={downloadImage} onNewCanvas={createNewCanvas} />
+      <Navbar
+        onSave={downloadImage}
+        onNewCanvas={createNewCanvas}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={toggleSidebar}
+      />
+
+      <HorizontalToolbar
+        onColorChange={handleColorChange}
+        onBrushSizeChange={handleBrushSizeChange}
+        onOpacityChange={handleOpacityChange}
+        onFontChange={handleFontChange}
+        onTextStyleChange={handleTextStyleChange}
+        onTextAlignChange={handleTextAlignChange}
+        selectedObject={selectedObject}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <Toolbar
@@ -328,13 +433,17 @@ export function ImageEditor() {
           <canvas ref={canvasRef} />
         </div>
 
-        <SidebarPanel
-          canvas={canvas}
-          selectedObject={selectedObject}
-          history={history}
-          historyIndex={historyIndex}
-          onHistoryChange={handleHistoryChange}
-        />
+        <div
+          className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? "w-64" : "w-0 opacity-0 overflow-hidden"}`}
+        >
+          <SidebarPanel
+            canvas={canvas}
+            selectedObject={selectedObject}
+            history={history}
+            historyIndex={historyIndex}
+            onHistoryChange={handleHistoryChange}
+          />
+        </div>
       </div>
     </div>
   )
