@@ -17,7 +17,7 @@ export function SidebarPanel({ canvas, selectedObject, history, historyIndex, on
   const [activeTab, setActiveTab] = useState("layers")
 
   return (
-    <div className="w-64 border-l bg-background h-full flex flex-col">
+    <div className="w-full border-l bg-background h-full flex flex-col">
       <Tabs defaultValue="layers" className="flex flex-col h-full" onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 h-12 rounded-none border-b">
           <TabsTrigger
