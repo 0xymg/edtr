@@ -86,7 +86,7 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
         // Add horizontal rule after heading if it's being applied
         setTimeout(() => {
           if (editor.isActive('heading', { level: 1 })) {
-            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr>').run();
+            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr><p></p>').run();
           }
         }, 50);
         break;
@@ -95,7 +95,7 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
         // Add horizontal rule after heading if it's being applied
         setTimeout(() => {
           if (editor.isActive('heading', { level: 2 })) {
-            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr>').run();
+            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr><p></p>').run();
           }
         }, 50);
         break;
@@ -104,12 +104,12 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
         // Add horizontal rule after heading if it's being applied
         setTimeout(() => {
           if (editor.isActive('heading', { level: 3 })) {
-            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr>').run();
+            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr><p></p>').run();
           }
         }, 50);
         break;
       case 'horizontalRule':
-        editor.chain().focus().setHorizontalRule().run();
+        editor.chain().focus().setHorizontalRule().insertContent('<p></p>').focus().run();
         break;
       case 'align-left':
         editor.chain().focus().setTextAlign('left').run();
