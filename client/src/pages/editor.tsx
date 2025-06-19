@@ -256,7 +256,7 @@ export default function Editor() {
             </div>
 
             {/* Editor Area - Integrated main section */}
-            <EditorArea editor={editor} margins={pdfMarginPresets[pdfMargins].top} />
+            <EditorArea editor={editor} />
           </div>
           
           {/* Tips Section */}
