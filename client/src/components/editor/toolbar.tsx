@@ -77,7 +77,8 @@ export function Toolbar({
   onExportPDF,
   onExportDocx,
 }: ToolbarProps) {
-  const [selectedColor, setSelectedColor] = useState('#000000');
+  // Get current text color from editor or default to black
+  const currentColor = editor?.getAttributes('textStyle')?.color || '#000000';
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -103,7 +104,6 @@ export function Toolbar({
   }
 
   const handleColorChange = (color: string) => {
-    setSelectedColor(color);
     formatText('color', { color });
   };
 
@@ -280,11 +280,11 @@ export function Toolbar({
           <div className="flex items-center space-x-1">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" title="Text Color">
+                <Button variant="ghost" size="sm" title="Text Color" className="relative">
                   <Palette className="w-4 h-4" />
                   <div 
-                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4 h-1 rounded"
-                    style={{ backgroundColor: selectedColor }}
+                    className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-0.5 rounded"
+                    style={{ backgroundColor: currentColor }}
                   />
                 </Button>
               </PopoverTrigger>
