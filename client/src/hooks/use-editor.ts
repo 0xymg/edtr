@@ -36,10 +36,11 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
         types: ['heading', 'paragraph'],
       }),
       Image.configure({
-        inline: true,
+        inline: false,
         allowBase64: true,
         HTMLAttributes: {
           class: 'editor-image',
+          draggable: false,
         },
       }),
     ],

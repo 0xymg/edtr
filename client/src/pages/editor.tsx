@@ -6,6 +6,7 @@ import { StatusBar } from '@/components/editor/status-bar';
 import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
+import { enableImageResize } from '@/lib/imageResize';
 import { useState } from 'react';
 import { Moon, Sun, Check, X, Download, Upload, ChevronDown, FileText, FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -126,6 +127,14 @@ export default function Editor() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [newDocument, openDocument, saveDocument, undo, redo, formatText]);
+
+  // Initialize image resize functionality
+  useEffect(() => {
+    const imageResizeInstance = enableImageResize();
+    return () => {
+      imageResizeInstance.destroy();
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
