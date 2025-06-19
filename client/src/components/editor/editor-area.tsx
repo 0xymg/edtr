@@ -15,7 +15,8 @@ export function EditorArea({ editor, margins = 8 }: EditorAreaProps) {
         className="min-h-[600px] shadow-lg rounded"
         style={{ 
           padding: `${marginPx}px`,
-          maxWidth: '210mm', // A4 width
+          width: '210mm', // A4 width (8.27 inches)
+          minHeight: '297mm', // A4 height (11.69 inches)
           margin: '0 auto',
           backgroundColor: 'white',
           color: 'black'
