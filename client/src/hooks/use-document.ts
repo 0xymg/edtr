@@ -392,6 +392,143 @@ export function useDocument() {
     });
   }, [documentState.content, documentState.title, toast]);
 
+  const importFromMarkdown = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.md,.markdown';
+    
+    input.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const markdownContent = e.target?.result as string;
+        if (!markdownContent) return;
+
+        // Function to convert markdown to HTML
+        const markdownToHtml = (markdown: string): string => {
+          let html = markdown;
+          
+          // Convert headings
+          html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
+          html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>');
+          html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+          html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+          html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+          html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+          
+          // Convert bold and italic
+          html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+          html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+          html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+          html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+          html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+          
+          // Convert inline code
+          html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+          
+          // Convert code blocks
+          const codeBlockRegex = /```([\s\S]*?)```/g;
+          html = html.replace(codeBlockRegex, '<pre><code>$1</code></pre>');
+          
+          // Convert links
+          html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+          
+          // Convert images
+          html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+          
+          // Convert horizontal rules
+          html = html.replace(/^---$/gm, '<hr>');
+          html = html.replace(/^\*\*\*$/gm, '<hr>');
+          
+          // Convert unordered lists
+          html = html.replace(/^[\s]*[-*+]\s+(.+)$/gm, '<li>$1</li>');
+          const listRegex = /(<li>.*<\/li>)/;
+          html = html.replace(listRegex, '<ul>$1</ul>');
+          
+          // Convert ordered lists
+          html = html.replace(/^[\s]*\d+\.\s+(.+)$/gm, '<li>$1</li>');
+          
+          // Convert blockquotes
+          html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+          
+          // Convert line breaks to paragraphs
+          const lines = html.split('\n');
+          const paragraphs: string[] = [];
+          let currentParagraph = '';
+          
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            // Skip empty lines
+            if (line === '') {
+              if (currentParagraph.trim()) {
+                // Check if it's already a block element
+                if (!currentParagraph.match(/^<(h[1-6]|ul|ol|li|blockquote|pre|hr)/)) {
+                  paragraphs.push(`<p>${currentParagraph.trim()}</p>`);
+                } else {
+                  paragraphs.push(currentParagraph.trim());
+                }
+                currentParagraph = '';
+              }
+              continue;
+            }
+            
+            // If it's a block element, add it directly
+            if (line.match(/^<(h[1-6]|ul|ol|li|blockquote|pre|hr)/)) {
+              if (currentParagraph.trim()) {
+                paragraphs.push(`<p>${currentParagraph.trim()}</p>`);
+                currentParagraph = '';
+              }
+              paragraphs.push(line);
+            } else {
+              currentParagraph += (currentParagraph ? ' ' : '') + line;
+            }
+          }
+          
+          // Add remaining paragraph
+          if (currentParagraph.trim()) {
+            if (!currentParagraph.match(/^<(h[1-6]|ul|ol|li|blockquote|pre|hr)/)) {
+              paragraphs.push(`<p>${currentParagraph.trim()}</p>`);
+            } else {
+              paragraphs.push(currentParagraph.trim());
+            }
+          }
+          
+          return paragraphs.join('\n');
+        };
+
+        // Convert markdown to HTML
+        const htmlContent = markdownToHtml(markdownContent);
+        
+        // Extract title from first heading or use filename
+        let title = file.name.replace(/\.(md|markdown)$/i, '');
+        const firstHeadingMatch = markdownContent.match(/^#\s+(.+)$/m);
+        if (firstHeadingMatch) {
+          title = firstHeadingMatch[1];
+        }
+
+        // Update document state
+        setDocumentState(prev => ({
+          ...prev,
+          title,
+          content: htmlContent,
+          isDirty: true,
+        }));
+
+        toast({
+          title: "Markdown Imported",
+          description: `Successfully imported ${file.name}`,
+        });
+      };
+
+      reader.readAsText(file);
+    };
+
+    input.click();
+  }, [toast]);
+
   const exportAsPDF = useCallback(async () => {
     try {
       const margins = PDF_MARGIN_PRESETS[pdfMargins];
@@ -750,6 +887,7 @@ export function useDocument() {
     exportAsText,
     exportAsHTML,
     exportAsMarkdown,
+    importFromMarkdown,
     exportAsPDF,
     exportAsDocx,
     autoSave,
