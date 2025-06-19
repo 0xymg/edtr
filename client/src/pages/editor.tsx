@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Toolbar } from '@/components/editor/toolbar';
 import { EditorArea } from '@/components/editor/editor-area';
 import { StatusBar } from '@/components/editor/status-bar';
-import { FindReplaceDialog } from '@/components/editor/find-replace-dialog';
+import { FindReplacePanel } from '@/components/editor/find-replace-panel';
 import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
@@ -297,8 +297,8 @@ export default function Editor() {
         />
       </div>
 
-      {/* Find Replace Dialog */}
-      <FindReplaceDialog
+      {/* Find Replace Panel */}
+      <FindReplacePanel
         editor={editor}
         open={findReplaceOpen}
         onOpenChange={setFindReplaceOpen}

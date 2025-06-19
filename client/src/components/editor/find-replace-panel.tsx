@@ -1,19 +1,19 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Editor } from '@tiptap/react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
 
-interface FindReplaceDialogProps {
+interface FindReplacePanelProps {
   editor: Editor | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDialogProps) {
+export function FindReplacePanel({ editor, open, onOpenChange }: FindReplacePanelProps) {
   const [findText, setFindText] = useState('');
   const [replaceText, setReplaceText] = useState('');
   const [matchCase, setMatchCase] = useState(false);
@@ -22,7 +22,7 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
   const [totalMatches, setTotalMatches] = useState(0);
   const { toast } = useToast();
 
-  // Clear highlights when dialog closes
+  // Clear highlights when panel closes
   useEffect(() => {
     if (!open && editor) {
       clearHighlights();
@@ -33,9 +33,15 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
     if (!editor) return;
     
     const content = editor.getHTML();
-    const cleanContent = content.replace(/<mark[^>]*>/g, '').replace(/<\/mark>/g, '');
+    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
     if (cleanContent !== content) {
       editor.commands.setContent(cleanContent);
+    }
+    
+    // Remove the style element
+    const styleEl = document.getElementById('find-highlight-style');
+    if (styleEl) {
+      styleEl.remove();
     }
   }, [editor]);
 
@@ -47,54 +53,68 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
       return;
     }
 
+    // Get clean content first
     const content = editor.getHTML();
+    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
+    
     const searchFlags = matchCase ? 'g' : 'gi';
-    const pattern = wholeWords ? `\\b${searchText.trim()}\\b` : searchText.trim();
+    const escapedText = searchText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = wholeWords ? `\\b${escapedText}\\b` : escapedText;
     
     try {
       const regex = new RegExp(pattern, searchFlags);
-      const matches: RegExpExecArray[] = [];
-      let match;
+      const matches = cleanContent.match(regex);
       
-      // Collect all matches
-      while ((match = regex.exec(content)) !== null) {
-        matches.push(match);
-        if (!searchFlags.includes('g')) break;
-      }
-      
-      if (matches.length > 0) {
-        // Replace matches with highlighted version (reverse order to maintain indices)
-        let highlightedContent = content;
+      if (matches && matches.length > 0) {
+        setTotalMatches(matches.length);
         
-        for (let i = matches.length - 1; i >= 0; i--) {
-          const match = matches[i];
-          const start = match.index!;
-          const end = start + match[0].length;
-          const highlightClass = i === currentMatchIndex ? 'bg-yellow-400 text-black' : 'bg-yellow-200 text-black';
-          const replacement = `<mark class="${highlightClass}">${match[0]}</mark>`;
-          
-          highlightedContent = highlightedContent.slice(0, start) + replacement + highlightedContent.slice(end);
+        // Add CSS for highlighting
+        const styleEl = document.getElementById('find-highlight-style') || document.createElement('style');
+        styleEl.id = 'find-highlight-style';
+        styleEl.innerHTML = `
+          .ProseMirror mark.find-highlight {
+            background-color: #fef08a !important;
+            color: #000000 !important;
+            padding: 1px 2px;
+            border-radius: 2px;
+          }
+          .ProseMirror mark.find-highlight.current {
+            background-color: #eab308 !important;
+            font-weight: 600;
+          }
+        `;
+        if (!document.head.contains(styleEl)) {
+          document.head.appendChild(styleEl);
         }
         
+        // Highlight all matches
+        let highlightedContent = cleanContent;
+        let matchIndex = 0;
+        
+        highlightedContent = highlightedContent.replace(regex, (match) => {
+          const className = matchIndex === currentMatchIndex ? 'find-highlight current' : 'find-highlight';
+          matchIndex++;
+          return `<mark class="${className}">${match}</mark>`;
+        });
+        
         editor.commands.setContent(highlightedContent);
-        setTotalMatches(matches.length);
         
         // Scroll to current match
         setTimeout(() => {
-          const markElements = document.querySelectorAll('mark');
-          if (markElements[currentMatchIndex]) {
-            markElements[currentMatchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const currentMark = document.querySelector('mark.find-highlight.current');
+          if (currentMark) {
+            currentMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         }, 100);
       } else {
-        clearHighlights();
         setTotalMatches(0);
         setCurrentMatchIndex(0);
+        clearHighlights();
       }
     } catch (error) {
-      clearHighlights();
       setTotalMatches(0);
       setCurrentMatchIndex(0);
+      clearHighlights();
     }
   }, [editor, matchCase, wholeWords, currentMatchIndex, clearHighlights]);
 
@@ -139,12 +159,13 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
   const replace = useCallback(() => {
     if (!editor || !findText.trim() || totalMatches === 0) return;
 
-    // First clear highlights to get clean content
+    // Get clean content
     const content = editor.getHTML();
-    const cleanContent = content.replace(/<mark[^>]*>/g, '').replace(/<\/mark>/g, '');
+    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
     
-    const searchFlags = matchCase ? '' : 'i'; // Remove 'g' flag for single replacement
-    const pattern = wholeWords ? `\\b${findText.trim()}\\b` : findText.trim();
+    const searchFlags = matchCase ? '' : 'i';
+    const escapedText = findText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = wholeWords ? `\\b${escapedText}\\b` : escapedText;
     
     try {
       const regex = new RegExp(pattern, searchFlags);
@@ -152,7 +173,6 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
       
       if (newContent !== cleanContent) {
         editor.commands.setContent(newContent);
-        // Reset search after replacement
         setCurrentMatchIndex(0);
         setTimeout(() => {
           if (findText.trim()) {
@@ -177,12 +197,13 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
   const replaceAll = useCallback(() => {
     if (!editor || !findText.trim() || totalMatches === 0) return;
 
-    // Clear highlights to get clean content
+    // Get clean content
     const content = editor.getHTML();
-    const cleanContent = content.replace(/<mark[^>]*>/g, '').replace(/<\/mark>/g, '');
+    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
     
     const searchFlags = matchCase ? 'g' : 'gi';
-    const pattern = wholeWords ? `\\b${findText.trim()}\\b` : findText.trim();
+    const escapedText = findText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = wholeWords ? `\\b${escapedText}\\b` : escapedText;
     
     try {
       const regex = new RegExp(pattern, searchFlags);
@@ -209,23 +230,32 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
     }
   }, [editor, findText, replaceText, matchCase, wholeWords, totalMatches, clearHighlights, toast]);
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Find & Replace</DialogTitle>
-        </DialogHeader>
+    <div className="absolute top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-lg">
+      <div className="p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Find & Replace</span>
+          <div className="flex items-center space-x-2">
+            {totalMatches > 0 && (
+              <span className="text-sm text-muted-foreground">
+                {currentMatchIndex + 1} of {totalMatches}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="find-input">Find</Label>
-              {totalMatches > 0 && (
-                <span className="text-sm text-muted-foreground">
-                  {currentMatchIndex + 1} of {totalMatches}
-                </span>
-              )}
-            </div>
+            <Label htmlFor="find-input" className="text-xs">Find</Label>
             <div className="flex space-x-1">
               <Input
                 id="find-input"
@@ -239,37 +269,42 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
                     onOpenChange(false);
                   }
                 }}
-                className="flex-1"
+                className="flex-1 h-8"
               />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={findPrevious}
                 disabled={totalMatches === 0}
+                className="h-8 px-2"
               >
-                ↑
+                <ChevronUp className="h-3 w-3" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={findNext}
                 disabled={totalMatches === 0}
+                className="h-8 px-2"
               >
-                ↓
+                <ChevronDown className="h-3 w-3" />
               </Button>
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="replace-input">Replace with</Label>
+            <Label htmlFor="replace-input" className="text-xs">Replace with</Label>
             <Input
               id="replace-input"
               value={replaceText}
               onChange={(e) => setReplaceText(e.target.value)}
               placeholder="Enter replacement text..."
+              className="h-8"
             />
           </div>
-          
+        </div>
+        
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -277,7 +312,7 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
                 checked={matchCase}
                 onCheckedChange={(checked) => setMatchCase(checked as boolean)}
               />
-              <Label htmlFor="match-case">Match case</Label>
+              <Label htmlFor="match-case" className="text-xs">Match case</Label>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -286,20 +321,20 @@ export function FindReplaceDialog({ editor, open, onOpenChange }: FindReplaceDia
                 checked={wholeWords}
                 onCheckedChange={(checked) => setWholeWords(checked as boolean)}
               />
-              <Label htmlFor="whole-words">Whole words</Label>
+              <Label htmlFor="whole-words" className="text-xs">Whole words</Label>
             </div>
           </div>
           
-          <div className="flex space-x-2 pt-4">
-            <Button onClick={replace} variant="secondary" disabled={totalMatches === 0}>
+          <div className="flex space-x-2">
+            <Button onClick={replace} variant="secondary" size="sm" disabled={totalMatches === 0}>
               Replace
             </Button>
-            <Button onClick={replaceAll} variant="secondary" disabled={totalMatches === 0}>
+            <Button onClick={replaceAll} variant="secondary" size="sm" disabled={totalMatches === 0}>
               Replace All
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
