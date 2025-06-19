@@ -263,7 +263,7 @@ export default function Editor() {
           </div>
           
           {/* Advertisement Section */}
-          <div className="w-full py-4 -mx-4 px-4">
+          <div className="w-full py-4">
             <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
               <div className="text-xs text-gray-400 dark:text-gray-500 mb-2">Advertisement</div>
               <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded p-8 min-h-[100px] flex items-center justify-center">
