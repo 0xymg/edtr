@@ -83,28 +83,28 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
         break;
       case 'heading-1':
         editor.chain().focus().toggleHeading({ level: 1 }).run();
-        // Add horizontal rule after heading if it's being applied (not toggled off)
+        // Add horizontal rule after heading if it's being applied
         setTimeout(() => {
           if (editor.isActive('heading', { level: 1 })) {
-            editor.chain().focus().setTextSelection(editor.state.selection.to).insertContent('<hr>').run();
+            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr>').run();
           }
         }, 50);
         break;
       case 'heading-2':
         editor.chain().focus().toggleHeading({ level: 2 }).run();
-        // Add horizontal rule after heading if it's being applied (not toggled off)
+        // Add horizontal rule after heading if it's being applied
         setTimeout(() => {
           if (editor.isActive('heading', { level: 2 })) {
-            editor.chain().focus().setTextSelection(editor.state.selection.to).insertContent('<hr>').run();
+            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr>').run();
           }
         }, 50);
         break;
       case 'heading-3':
         editor.chain().focus().toggleHeading({ level: 3 }).run();
-        // Add horizontal rule after heading if it's being applied (not toggled off)
+        // Add horizontal rule after heading if it's being applied
         setTimeout(() => {
           if (editor.isActive('heading', { level: 3 })) {
-            editor.chain().focus().setTextSelection(editor.state.selection.to).insertContent('<hr>').run();
+            editor.chain().focus().insertContentAt(editor.state.selection.to, '<hr>').run();
           }
         }, 50);
         break;
