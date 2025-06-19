@@ -10,6 +10,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
   const [showControls, setShowControls] = useState(false);
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
+  const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
 
   const selectImage = (img: HTMLImageElement) => {
     // Clear previous selection
@@ -18,6 +19,17 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     // Add selection styling
     img.style.outline = '2px solid #3b82f6';
     img.style.outlineOffset = '2px';
+    img.style.position = 'relative';
+    
+    // Calculate toolbar position relative to image
+    const rect = img.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    
+    setToolbarPosition({
+      top: rect.top + scrollTop - 50, // Position above the image
+      left: rect.left + scrollLeft + rect.width - 300 // Align to right edge of image
+    });
     
     setSelectedImage(img);
     setShowControls(true);
@@ -71,17 +83,18 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   const cropImage = () => {
     if (!selectedImage) return;
     
+    // Create a more sophisticated crop effect by adjusting both dimensions and using object-fit
     const currentWidth = selectedImage.offsetWidth;
-    const newWidth = currentWidth * 0.8;
-    let newHeight = selectedImage.offsetHeight * 0.8;
+    const currentHeight = selectedImage.offsetHeight;
     
-    if (lockAspectRatio && selectedImage.naturalWidth && selectedImage.naturalHeight) {
-      const aspectRatio = selectedImage.naturalWidth / selectedImage.naturalHeight;
-      newHeight = newWidth / aspectRatio;
-    }
+    // Crop by reducing size by 20% on each side (effectively 60% of original)
+    const newWidth = Math.max(50, currentWidth * 0.7);
+    const newHeight = Math.max(50, currentHeight * 0.7);
     
     selectedImage.style.width = `${newWidth}px`;
     selectedImage.style.height = `${newHeight}px`;
+    selectedImage.style.objectFit = 'cover';
+    selectedImage.style.objectPosition = 'center';
   };
 
   const resetImageSize = () => {
@@ -90,6 +103,8 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     selectedImage.style.width = '';
     selectedImage.style.height = '';
     selectedImage.style.maxWidth = '100%';
+    selectedImage.style.objectFit = '';
+    selectedImage.style.objectPosition = '';
   };
 
   useEffect(() => {
@@ -113,8 +128,8 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     <div 
       className="image-controls fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 flex gap-2 z-50"
       style={{
-        top: '10px',
-        right: '10px'
+        top: `${Math.max(10, toolbarPosition.top)}px`,
+        left: `${Math.max(10, Math.min(toolbarPosition.left, window.innerWidth - 320))}px`
       }}
     >
       <Button
