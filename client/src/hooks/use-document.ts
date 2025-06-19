@@ -13,6 +13,23 @@ export interface DocumentState {
   lastSaved: Date | null;
 }
 
+export type PDFMarginType = 'narrow' | 'normal' | 'wide' | 'wider';
+
+export interface PDFMarginSettings {
+  type: PDFMarginType;
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+const PDF_MARGIN_PRESETS: Record<PDFMarginType, PDFMarginSettings> = {
+  narrow: { type: 'narrow', top: 10, right: 10, bottom: 10, left: 10 },
+  normal: { type: 'normal', top: 20, right: 20, bottom: 20, left: 20 },
+  wide: { type: 'wide', top: 30, right: 30, bottom: 30, left: 30 },
+  wider: { type: 'wider', top: 40, right: 40, bottom: 40, left: 40 },
+};
+
 export function useDocument() {
   const { toast } = useToast();
   const [documentState, setDocumentState] = useState<DocumentState>({
@@ -22,6 +39,8 @@ export function useDocument() {
     isSaving: false,
     lastSaved: null,
   });
+  
+  const [pdfMargins, setPdfMargins] = useState<PDFMarginType>('normal');
 
   // Auto-save functionality
   useEffect(() => {
@@ -207,15 +226,18 @@ export function useDocument() {
     });
   }, [documentState.content, documentState.title, toast]);
 
-  const exportAsPDF = useCallback(async () => {
+  const exportAsPDF = useCallback(async (marginType?: PDFMarginType) => {
     try {
+      const margins = PDF_MARGIN_PRESETS[marginType || pdfMargins];
+      const contentWidth = 210 - margins.left - margins.right; // A4 width minus margins
+      
       // Create a temporary div with the content for rendering
       const tempDiv = window.document.createElement('div');
       tempDiv.innerHTML = documentState.content;
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
-      tempDiv.style.width = '800px';
-      tempDiv.style.padding = '40px';
+      tempDiv.style.width = `${contentWidth * 3.78}px`; // Convert mm to px (approx)
+      tempDiv.style.padding = `${margins.top * 3.78}px ${margins.right * 3.78}px ${margins.bottom * 3.78}px ${margins.left * 3.78}px`;
       tempDiv.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       tempDiv.style.fontSize = '16px';
       tempDiv.style.lineHeight = '1.6';
@@ -305,7 +327,7 @@ export function useDocument() {
         useCORS: true,
         allowTaint: true,
         logging: false,
-        width: 800,
+        width: contentWidth * 3.78,
         height: tempDiv.scrollHeight
       });
 
@@ -313,20 +335,20 @@ export function useDocument() {
 
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 190;
-      const pageHeight = 280;
+      const imgWidth = contentWidth;
+      const pageHeight = 297 - margins.top - margins.bottom; // A4 height minus margins
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
 
-      let position = 10;
+      let position = margins.top;
 
-      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', margins.left, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
-        position = heightLeft - imgHeight + 10;
+        position = heightLeft - imgHeight + margins.top;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'PNG', margins.left, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
 
@@ -334,7 +356,7 @@ export function useDocument() {
 
       toast({
         title: "PDF Exported",
-        description: `Exported as ${documentState.title}.pdf`,
+        description: `Exported as ${documentState.title}.pdf with ${margins.type} margins`,
       });
     } catch (error) {
       toast({
@@ -343,7 +365,7 @@ export function useDocument() {
         variant: "destructive",
       });
     }
-  }, [documentState.content, documentState.title, toast]);
+  }, [documentState.content, documentState.title, toast, pdfMargins]);
 
   const exportAsDocx = useCallback(async () => {
     try {
@@ -530,5 +552,8 @@ export function useDocument() {
     exportAsPDF,
     exportAsDocx,
     autoSave,
+    pdfMargins,
+    setPdfMargins,
+    pdfMarginPresets: PDF_MARGIN_PRESETS,
   };
 }

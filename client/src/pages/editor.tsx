@@ -19,7 +19,7 @@ import {
 
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
-  const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText, exportAsPDF, exportAsDocx } = useDocument();
+  const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText, exportAsPDF, exportAsDocx, pdfMargins, setPdfMargins, pdfMarginPresets } = useDocument();
   const { editor, stats, formatText, setContent, getContent, clearContent, undo, redo, canUndo, canRedo } = useEditor(
     currentDocument.content,
     updateContent
@@ -196,10 +196,29 @@ export default function Editor() {
                     <FileText className="w-4 h-4 mr-2" />
                     Export as Text
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={exportAsPDF}>
-                    <FileIcon className="w-4 h-4 mr-2" />
-                    Export as PDF
-                  </DropdownMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <DropdownMenuItem>
+                        <FileIcon className="w-4 h-4 mr-2" />
+                        Export as PDF
+                        <ChevronDown className="w-3 h-3 ml-auto" />
+                      </DropdownMenuItem>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent side="right">
+                      <DropdownMenuItem onClick={() => exportAsPDF('narrow')}>
+                        Narrow margins
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportAsPDF('normal')}>
+                        Normal margins
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportAsPDF('wide')}>
+                        Wide margins
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportAsPDF('wider')}>
+                        Wider margins
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <DropdownMenuItem onClick={exportAsDocx}>
                     <FileText className="w-4 h-4 mr-2" />
                     Export as DOCX
