@@ -93,16 +93,29 @@ export function Toolbar({
           
           {/* File Operations */}
           <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="sm" onClick={onNew} title="New Document (Ctrl+N)">
-              <Plus className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onOpen} title="Open Document (Ctrl+O)">
-              <FolderOpen className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onSave} title="Save Document (Ctrl+S)">
-              <Save className="w-4 h-4" />
-            </Button>
-            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" title="File Operations">
+                  <File className="w-4 h-4 mr-1" />
+                  File
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={onNew}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Document
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onOpen}>
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  Open Document
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onSave}>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Document
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
           </div>
 
