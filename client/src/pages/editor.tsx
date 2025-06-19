@@ -127,78 +127,76 @@ export default function Editor() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">WordPad Pro</h1>
-            
-            {isEditingTitle ? (
-              <div className="flex items-center space-x-2">
-                <Input
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
-                  onKeyDown={handleTitleKeyPress}
-                  className="text-sm w-48"
-                  placeholder="Document name"
-                  autoFocus
-                />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={saveTitle}
-                  className="p-1 h-6 w-6"
-                >
-                  <Check className="w-3 h-3 text-green-600" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={cancelEditingTitle}
-                  className="p-1 h-6 w-6"
-                >
-                  <X className="w-3 h-3 text-red-600" />
-                </Button>
-              </div>
-            ) : (
-              <span 
-                className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 hover:underline"
-                onClick={startEditingTitle}
-                title="Click to rename document"
-              >
-                {currentDocument.title}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="p-2"
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </Button>
-            
-            <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-              <div className={`w-2 h-2 rounded-full ${currentDocument.isSaving ? 'bg-yellow-500' : 'bg-green-500 animate-pulse'}`} />
-              <span>{currentDocument.isSaving ? 'Saving...' : 'Auto-saved'}</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content Container */}
       <div className="flex-1 flex flex-col" style={{ paddingTop: '25px' }}>
-        <div className="max-w-[1200px] mx-auto w-full flex-1 flex flex-col">
+        <div className="max-w-[1200px] mx-auto w-full flex-1 flex flex-col px-4">
+          
+          {/* Header Content - Now inside wrapper */}
+          <div className="flex items-center justify-between py-3 mb-6">
+            <div className="flex items-center space-x-3">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">WordPad Pro</h1>
+              
+              {isEditingTitle ? (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onKeyDown={handleTitleKeyPress}
+                    className="text-sm w-48"
+                    placeholder="Document name"
+                    autoFocus
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={saveTitle}
+                    className="p-1 h-6 w-6"
+                  >
+                    <Check className="w-3 h-3 text-green-600" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={cancelEditingTitle}
+                    className="p-1 h-6 w-6"
+                  >
+                    <X className="w-3 h-3 text-red-600" />
+                  </Button>
+                </div>
+              ) : (
+                <span 
+                  className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 hover:underline"
+                  onClick={startEditingTitle}
+                  title="Click to rename document"
+                >
+                  {currentDocument.title}
+                </span>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                className="p-2"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </Button>
+              
+              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className={`w-2 h-2 rounded-full ${currentDocument.isSaving ? 'bg-yellow-500' : 'bg-green-500 animate-pulse'}`} />
+                <span>{currentDocument.isSaving ? 'Saving...' : 'Auto-saved'}</span>
+              </div>
+            </div>
+          </div>
           
           {/* Integrated Editor Container */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden -mx-4">
             {/* Toolbar - Integrated top section */}
             <div className="border-b border-gray-200 dark:border-gray-700">
               <Toolbar
@@ -223,7 +221,7 @@ export default function Editor() {
           </div>
           
           {/* Tips Section */}
-          <div className="max-w-[1200px] mx-auto w-full px-4 py-3">
+          <div className="w-full py-3 -mx-4 px-4">
             <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-6 gap-y-1 justify-center">
               <span>💡 <strong>Tip:</strong> Use Ctrl+1, Ctrl+2, Ctrl+3 for headings</span>
               <span>⚡ <strong>Auto-save:</strong> Changes saved every 2 seconds</span>
