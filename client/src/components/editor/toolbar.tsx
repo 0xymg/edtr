@@ -105,6 +105,11 @@ export function Toolbar({
             <Button variant="ghost" size="sm" onClick={onExport} title="Export as Text">
               <Download className="w-4 h-4" />
             </Button>
+            {onExportMarkdown && (
+              <Button variant="ghost" size="sm" onClick={onExportMarkdown} title="Export as Markdown">
+                <FileText className="w-4 h-4" />
+              </Button>
+            )}
           </div>
 
           <Separator orientation="vertical" className="h-6" />
@@ -295,6 +300,23 @@ export function Toolbar({
               <Search className="w-4 h-4" />
             </Button>
           </div>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Markdown Mode */}
+          {onToggleMarkdown && (
+            <div className="flex items-center space-x-1">
+              <Button 
+                variant={isMarkdownMode ? 'default' : 'ghost'} 
+                size="sm" 
+                onClick={onToggleMarkdown} 
+                title="Toggle Markdown Mode"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-xs ml-1">MD</span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

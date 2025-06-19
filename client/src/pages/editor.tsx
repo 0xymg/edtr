@@ -3,9 +3,11 @@ import { Toolbar } from '@/components/editor/toolbar';
 import { EditorArea } from '@/components/editor/editor-area';
 import { StatusBar } from '@/components/editor/status-bar';
 import { FindReplaceDialog } from '@/components/editor/find-replace-dialog';
+import { MarkdownEditor } from '@/components/editor/markdown-editor';
 import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
+import { useMarkdown } from '@/hooks/use-markdown';
 import { useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +15,7 @@ import { Button } from '@/components/ui/button';
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
   const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText } = useDocument();
+  const { isMarkdownMode, toggleMarkdownMode, htmlToMarkdown, markdownToHtml } = useMarkdown();
   const { editor, stats, formatText, setContent, getContent, clearContent, undo, redo, canUndo, canRedo } = useEditor(
     currentDocument.content,
     updateContent
@@ -96,6 +99,41 @@ export default function Editor() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [newDocument, openDocument, saveDocument, undo, redo, formatText]);
+
+  const handleToggleMarkdown = () => {
+    if (editor) {
+      const currentContent = getContent();
+      if (isMarkdownMode) {
+        // Converting from markdown to HTML
+        const htmlContent = markdownToHtml(currentContent);
+        setContent(htmlContent);
+      } else {
+        // Converting from HTML to markdown
+        const markdownContent = htmlToMarkdown(currentContent);
+        setContent(markdownContent);
+      }
+    }
+    toggleMarkdownMode();
+  };
+
+  const handleExportMarkdown = () => {
+    if (editor) {
+      const currentContent = getContent();
+      const markdownContent = isMarkdownMode 
+        ? currentContent 
+        : htmlToMarkdown(currentContent);
+      
+      const blob = new Blob([markdownContent], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentDocument.title}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
