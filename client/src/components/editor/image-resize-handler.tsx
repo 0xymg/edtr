@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Crop, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
-import { InlineCrop } from './inline-crop';
+import { ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 
 interface ImageResizeHandlerProps {
   editorRef: React.RefObject<HTMLDivElement>;
@@ -12,7 +11,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   const [showControls, setShowControls] = useState(false);
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
-  const [showInlineCrop, setShowInlineCrop] = useState(false);
+
 
   const selectImage = (img: HTMLImageElement) => {
     // Clear previous selection
@@ -58,9 +57,6 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   };
 
   const handleClickOutside = (e: Event) => {
-    // Don't clear selection if crop mode is active
-    if (showInlineCrop) return;
-    
     const target = e.target as HTMLElement;
     if (target.tagName !== 'IMG' && !target.closest('.image-controls')) {
       clearSelection();
@@ -93,23 +89,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     resizeImage(0.8); // 20% smaller
   };
 
-  const openInlineCrop = () => {
-    setShowInlineCrop(true);
-    setShowControls(false); // Hide toolbar during crop
-  };
 
-  const handleCropComplete = (croppedDataUrl: string) => {
-    if (selectedImage) {
-      selectedImage.src = croppedDataUrl;
-      setShowInlineCrop(false);
-      setShowControls(true); // Show toolbar again
-    }
-  };
-
-  const handleCropCancel = () => {
-    setShowInlineCrop(false);
-    setShowControls(true); // Show toolbar again
-  };
 
   const rotateImage = () => {
     if (!selectedImage) return;
@@ -184,15 +164,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
             <ZoomOut className="h-4 w-4" />
           </Button>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={openInlineCrop}
-            title="Crop image"
-          >
-            <Crop className="h-4 w-4" />
-          </Button>
-          
+
           <Button
             variant="ghost"
             size="sm"
@@ -204,13 +176,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
         </div>
       )}
       
-      {selectedImage && showInlineCrop && (
-        <InlineCrop
-          image={selectedImage}
-          onCropComplete={handleCropComplete}
-          onCancel={handleCropCancel}
-        />
-      )}
+
     </>
   );
 }
