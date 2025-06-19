@@ -79,6 +79,25 @@ export function Toolbar({
 }: ToolbarProps) {
   const [selectedColor, setSelectedColor] = useState('#000000');
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const src = e.target?.result as string;
+        if (src) {
+          formatText('image', { src, alt: file.name, title: file.name });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // Reset the input
+    event.target.value = '';
+  };
+
   if (!editor) {
     return null;
   }

@@ -164,6 +164,37 @@
   border-radius: 8px;
   margin: 1rem 0;
   display: block;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Image resize wrapper styles */
+.image-resize-wrapper {
+  position: relative;
+  display: inline-block;
+  border: 2px solid #3b82f6;
+  border-radius: 4px;
+  max-width: 100%;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border: 1px solid white;
+  border-radius: 2px;
+  z-index: 10;
+  transition: all 0.2s ease-in-out;
+}
+
+.resize-handle:hover {
+  background: #2563eb;
+  transform: scale(1.2);
+}
+
+.image-controls {
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .prose-editor pre {
