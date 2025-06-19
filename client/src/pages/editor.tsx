@@ -185,7 +185,7 @@ export default function Editor() {
             <div className="flex items-center space-x-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="default" size="sm" title="Export Document" className="bg-black hover:bg-gray-800 text-white dark:bg-black dark:hover:bg-gray-800">
+                  <Button variant="ghost" size="sm" title="Export Document">
                     <Download className="w-4 h-4 mr-2" />
                     Download
                     <ChevronDown className="w-3 h-3 ml-1" />
