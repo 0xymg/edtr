@@ -18,6 +18,7 @@ import {
   AlignRight,
   Search,
   Type,
+  FileText,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -34,6 +35,9 @@ interface ToolbarProps {
   onSave: () => void;
   onExport: () => void;
   onFindReplace: () => void;
+  isMarkdownMode?: boolean;
+  onToggleMarkdown?: () => void;
+  onExportMarkdown?: () => void;
 }
 
 const fontFamilies = [
@@ -67,6 +71,9 @@ export function Toolbar({
   onSave,
   onExport,
   onFindReplace,
+  isMarkdownMode = false,
+  onToggleMarkdown,
+  onExportMarkdown,
 }: ToolbarProps) {
   const [selectedColor, setSelectedColor] = useState('#000000');
 
