@@ -39,21 +39,37 @@ export function useDocument() {
 
     setDocumentState(prev => ({ ...prev, isSaving: true }));
 
-    // Simulate save delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const documentToSave = {
+        title: documentState.title,
+        content: documentState.content,
+        lastSaved: new Date().toISOString(),
+        id: Date.now().toString(),
+      };
+      
+      localStorage.setItem('current-document', JSON.stringify(documentToSave));
+      
+      const existingDocs = JSON.parse(localStorage.getItem('saved-documents') || '[]');
+      const docIndex = existingDocs.findIndex((doc: any) => doc.title === documentState.title);
+      
+      if (docIndex >= 0) {
+        existingDocs[docIndex] = documentToSave;
+      } else {
+        existingDocs.push(documentToSave);
+      }
+      
+      localStorage.setItem('saved-documents', JSON.stringify(existingDocs));
 
-    // In a real app, this would save to backend
-    localStorage.setItem('current-document', JSON.stringify({
-      title: documentState.title,
-      content: documentState.content,
-    }));
-
-    setDocumentState(prev => ({
-      ...prev,
-      isDirty: false,
-      isSaving: false,
-      lastSaved: new Date(),
-    }));
+      setDocumentState(prev => ({
+        ...prev,
+        isDirty: false,
+        isSaving: false,
+        lastSaved: new Date(),
+      }));
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      setDocumentState(prev => ({ ...prev, isSaving: false }));
+    }
   }, [documentState.content, documentState.title, documentState.isDirty]);
 
   const updateContent = useCallback((content: string) => {
@@ -128,24 +144,47 @@ export function useDocument() {
   }, [toast]);
 
   const saveDocument = useCallback(() => {
-    const blob = new Blob([documentState.content], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = window.document.createElement('a');
-    a.href = url;
-    a.download = `${documentState.title}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      // Save to localStorage
+      const documentToSave = {
+        title: documentState.title,
+        content: documentState.content,
+        lastSaved: new Date().toISOString(),
+        id: Date.now().toString(), // Simple ID generation
+      };
+      
+      // Save current document
+      localStorage.setItem('current-document', JSON.stringify(documentToSave));
+      
+      // Also save to documents list for future access
+      const existingDocs = JSON.parse(localStorage.getItem('saved-documents') || '[]');
+      const docIndex = existingDocs.findIndex((doc: any) => doc.title === documentState.title);
+      
+      if (docIndex >= 0) {
+        existingDocs[docIndex] = documentToSave;
+      } else {
+        existingDocs.push(documentToSave);
+      }
+      
+      localStorage.setItem('saved-documents', JSON.stringify(existingDocs));
 
-    setDocumentState(prev => ({
-      ...prev,
-      isDirty: false,
-      lastSaved: new Date(),
-    }));
+      setDocumentState(prev => ({
+        ...prev,
+        isDirty: false,
+        lastSaved: new Date(),
+      }));
 
-    toast({
-      title: "Document Saved",
-      description: `Saved as ${documentState.title}.html`,
-    });
+      toast({
+        title: "Document Saved",
+        description: `Saved "${documentState.title}" to local storage`,
+      });
+    } catch (error) {
+      toast({
+        title: "Save Error",
+        description: "Failed to save document. Please try again.",
+        variant: "destructive",
+      });
+    }
   }, [documentState.content, documentState.title, toast]);
 
   const exportAsText = useCallback(() => {
@@ -422,6 +461,45 @@ export function useDocument() {
       });
     }
   }, [documentState.content, documentState.title, toast]);
+
+  // Auto-save with debouncing - save 2 seconds after user stops typing
+  useEffect(() => {
+    if (!documentState.isDirty) return;
+    
+    const timeoutId = setTimeout(() => {
+      try {
+        const documentToSave = {
+          title: documentState.title,
+          content: documentState.content,
+          lastSaved: new Date().toISOString(),
+          id: Date.now().toString(),
+        };
+        
+        localStorage.setItem('current-document', JSON.stringify(documentToSave));
+        
+        const existingDocs = JSON.parse(localStorage.getItem('saved-documents') || '[]');
+        const docIndex = existingDocs.findIndex((doc: any) => doc.title === documentState.title);
+        
+        if (docIndex >= 0) {
+          existingDocs[docIndex] = documentToSave;
+        } else {
+          existingDocs.push(documentToSave);
+        }
+        
+        localStorage.setItem('saved-documents', JSON.stringify(existingDocs));
+
+        setDocumentState(prev => ({
+          ...prev,
+          isDirty: false,
+          lastSaved: new Date(),
+        }));
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [documentState.content, documentState.title, documentState.isDirty]);
 
   // Load document from localStorage on mount
   useEffect(() => {
