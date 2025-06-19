@@ -176,27 +176,95 @@ export function useDocument() {
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
       tempDiv.style.width = '800px';
-      tempDiv.style.padding = '20px';
-      tempDiv.style.fontFamily = 'Inter, sans-serif';
+      tempDiv.style.padding = '40px';
+      tempDiv.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       tempDiv.style.fontSize = '16px';
       tempDiv.style.lineHeight = '1.6';
-      tempDiv.style.color = '#000';
-      tempDiv.style.backgroundColor = '#fff';
+      tempDiv.style.color = '#000000';
+      tempDiv.style.backgroundColor = '#ffffff';
+      
+      // Apply specific styles to headings to ensure they're captured properly
+      const h1Elements = tempDiv.querySelectorAll('h1');
+      h1Elements.forEach((h1) => {
+        const element = h1 as HTMLElement;
+        element.style.fontSize = '36px';
+        element.style.fontWeight = '700';
+        element.style.margin = '32px 0 20px 0';
+        element.style.color = '#000000';
+        element.style.lineHeight = '1.2';
+        element.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      });
+      
+      const h2Elements = tempDiv.querySelectorAll('h2');
+      h2Elements.forEach((h2) => {
+        const element = h2 as HTMLElement;
+        element.style.fontSize = '28px';
+        element.style.fontWeight = '600';
+        element.style.margin = '28px 0 16px 0';
+        element.style.color = '#000000';
+        element.style.lineHeight = '1.3';
+        element.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      });
+      
+      const h3Elements = tempDiv.querySelectorAll('h3');
+      h3Elements.forEach((h3) => {
+        const element = h3 as HTMLElement;
+        element.style.fontSize = '22px';
+        element.style.fontWeight = '600';
+        element.style.margin = '24px 0 12px 0';
+        element.style.color = '#000000';
+        element.style.lineHeight = '1.4';
+        element.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      });
+      
+      // Style paragraphs
+      const paragraphs = tempDiv.querySelectorAll('p');
+      paragraphs.forEach((p) => {
+        const element = p as HTMLElement;
+        element.style.margin = '12px 0';
+        element.style.fontSize = '16px';
+        element.style.lineHeight = '1.6';
+        element.style.color = '#000000';
+        element.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      });
+      
+      // Style formatting elements
+      const boldElements = tempDiv.querySelectorAll('strong, b');
+      boldElements.forEach((element) => {
+        (element as HTMLElement).style.fontWeight = '700';
+      });
+      
+      const italicElements = tempDiv.querySelectorAll('em, i');
+      italicElements.forEach((element) => {
+        (element as HTMLElement).style.fontStyle = 'italic';
+      });
+      
+      const underlineElements = tempDiv.querySelectorAll('u');
+      underlineElements.forEach((element) => {
+        (element as HTMLElement).style.textDecoration = 'underline';
+      });
       
       window.document.body.appendChild(tempDiv);
+      
+      // Wait for styles to be applied
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(tempDiv, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: 800,
+        height: tempDiv.scrollHeight
       });
 
       window.document.body.removeChild(tempDiv);
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF();
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 190;
-      const pageHeight = 295;
+      const pageHeight = 280;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
 
