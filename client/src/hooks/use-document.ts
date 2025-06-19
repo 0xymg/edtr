@@ -249,7 +249,7 @@ export function useDocument() {
       hrElements.forEach((element) => {
         const hrElement = element as HTMLElement;
         hrElement.style.border = 'none';
-        hrElement.style.borderTop = '2px solid #000000';
+        hrElement.style.borderTop = '1px solid #efefef';
         hrElement.style.margin = '24px 0';
         hrElement.style.width = '100%';
         hrElement.style.height = '0';
