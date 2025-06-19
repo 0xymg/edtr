@@ -32,10 +32,11 @@ export function FindReplacePanel({ editor, open, onOpenChange }: FindReplacePane
   const clearHighlights = useCallback(() => {
     if (!editor) return;
     
-    // Remove any active selection highlighting
-    const { selection } = editor.state;
-    if (!selection.empty) {
-      editor.commands.setTextSelection(selection.from);
+    // Remove highlight spans from content
+    const content = editor.getHTML();
+    const cleanContent = content.replace(/<span[^>]*class="[^"]*search-highlight[^"]*"[^>]*>/g, '').replace(/<\/span>/g, '');
+    if (cleanContent !== content) {
+      editor.commands.setContent(cleanContent);
     }
     
     // Remove the style element
@@ -65,58 +66,47 @@ export function FindReplacePanel({ editor, open, onOpenChange }: FindReplacePane
       if (matches && matches.length > 0) {
         setTotalMatches(matches.length);
         
-        // Add visual feedback with CSS
+        // Create highlighting CSS
         const styleEl = document.getElementById('find-highlight-style') || document.createElement('style');
         styleEl.id = 'find-highlight-style';
         styleEl.innerHTML = `
-          .ProseMirror .selection {
+          .search-highlight {
+            background-color: #fef08a !important;
+            color: #000000 !important;
+            padding: 1px 2px;
+            border-radius: 2px;
+          }
+          .search-highlight.current {
             background-color: #eab308 !important;
+            font-weight: 600;
           }
         `;
         if (!document.head.contains(styleEl)) {
           document.head.appendChild(styleEl);
         }
         
-        // Find positions in the document
-        let searchResults: { from: number; to: number }[] = [];
-        const doc = editor.state.doc;
+        // Get clean HTML without existing highlights
+        let content = editor.getHTML();
+        content = content.replace(/<span[^>]*class="[^"]*search-highlight[^"]*"[^>]*>/g, '').replace(/<\/span>/g, '');
         
-        doc.descendants((node, nodePos) => {
-          if (node.isText && node.text) {
-            const text = node.text;
-            const nodeRegex = new RegExp(pattern, searchFlags);
-            let match;
-            
-            while ((match = nodeRegex.exec(text)) !== null) {
-              const startPos = nodePos + match.index;
-              const endPos = startPos + match[0].length;
-              searchResults.push({ from: startPos, to: endPos });
-              
-              if (!searchFlags.includes('g')) break;
-            }
-          }
+        // Add highlights to HTML content
+        let matchIndex = 0;
+        const highlightedContent = content.replace(new RegExp(pattern, searchFlags), (match) => {
+          const className = matchIndex === currentMatchIndex ? 'search-highlight current' : 'search-highlight';
+          matchIndex++;
+          return `<span class="${className}">${match}</span>`;
         });
         
-        // Select the current match
-        if (searchResults[currentMatchIndex]) {
-          const match = searchResults[currentMatchIndex];
-          editor.commands.setTextSelection({ from: match.from, to: match.to });
-          
-          // Scroll to selection
-          setTimeout(() => {
-            const selection = window.getSelection();
-            if (selection && selection.rangeCount > 0) {
-              const range = selection.getRangeAt(0);
-              const rect = range.getBoundingClientRect();
-              if (rect.top < 100 || rect.bottom > window.innerHeight - 100) {
-                range.startContainer.parentElement?.scrollIntoView({ 
-                  behavior: 'smooth', 
-                  block: 'center' 
-                });
-              }
-            }
-          }, 100);
-        }
+        // Update editor content with highlights
+        editor.commands.setContent(highlightedContent);
+        
+        // Scroll to current highlighted match
+        setTimeout(() => {
+          const currentHighlight = document.querySelector('.search-highlight.current');
+          if (currentHighlight) {
+            currentHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
       } else {
         setTotalMatches(0);
         setCurrentMatchIndex(0);
