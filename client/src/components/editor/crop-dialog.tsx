@@ -141,6 +141,9 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -160,6 +163,9 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !activeHandle) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -218,7 +224,9 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
     setCropArea(newCropArea);
   }, [isDragging, activeHandle, dragStart, originalCropArea, image]);
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
     setActiveHandle(null);
   }, []);
@@ -286,14 +294,25 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
     onClose();
   };
 
+  const handleDialogOpenChange = (open: boolean) => {
+    // Only allow closing if not currently dragging
+    if (!isDragging) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
+      <DialogContent className="max-w-2xl" onPointerDownOutside={(e) => {
+        if (isDragging) {
+          e.preventDefault();
+        }
+      }}>
         <DialogHeader>
           <DialogTitle>Crop Image</DialogTitle>
         </DialogHeader>
         
-        <div className="flex justify-center p-4">
+        <div className="flex justify-center p-4" onMouseDown={(e) => e.stopPropagation()}>
           <canvas
             ref={canvasRef}
             className="border border-gray-300"
