@@ -227,8 +227,12 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
   const handleMouseUp = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
-    setActiveHandle(null);
+    
+    // Add a small delay to ensure the drag state is properly reset
+    setTimeout(() => {
+      setIsDragging(false);
+      setActiveHandle(null);
+    }, 10);
   }, []);
 
   const getCursorStyle = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -294,20 +298,29 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
     onClose();
   };
 
-  const handleDialogOpenChange = (open: boolean) => {
-    // Only allow closing if not currently dragging
-    if (!isDragging) {
-      onClose();
-    }
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className="max-w-2xl" onPointerDownOutside={(e) => {
-        if (isDragging) {
-          e.preventDefault();
-        }
-      }}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      // Prevent closing if currently dragging
+      if (!open && isDragging) {
+        return;
+      }
+      if (!open) {
+        onClose();
+      }
+    }}>
+      <DialogContent 
+        className="max-w-2xl" 
+        onPointerDownOutside={(e) => {
+          if (isDragging) {
+            e.preventDefault();
+          }
+        }}
+        onInteractOutside={(e) => {
+          if (isDragging) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Crop Image</DialogTitle>
         </DialogHeader>
