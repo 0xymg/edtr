@@ -7,7 +7,7 @@ import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
 import { useState } from 'react';
-import { Moon, Sun, Check, X, Download, ChevronDown, FileText, FileIcon } from 'lucide-react';
+import { Moon, Sun, Check, X, Download, Upload, ChevronDown, FileText, FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -179,6 +179,16 @@ export default function Editor() {
             </div>
             
             <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={importFromMarkdown}
+                title="Import Markdown File"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import Markdown
+              </Button>
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" title="Export Document">

@@ -444,8 +444,7 @@ export function useDocument() {
           
           // Convert unordered lists
           html = html.replace(/^[\s]*[-*+]\s+(.+)$/gm, '<li>$1</li>');
-          const listRegex = /(<li>.*<\/li>)/;
-          html = html.replace(listRegex, '<ul>$1</ul>');
+          html = html.replace(/(<li>.*<\/li>)/, '<ul>$1</ul>');
           
           // Convert ordered lists
           html = html.replace(/^[\s]*\d+\.\s+(.+)$/gm, '<li>$1</li>');
