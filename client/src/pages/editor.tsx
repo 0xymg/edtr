@@ -134,7 +134,9 @@ export default function Editor() {
           {/* Header Content - Now inside wrapper */}
           <div className="flex items-center justify-between py-3 mb-6">
             <div className="flex items-center space-x-3">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">EDTR</h1>
+              <div className="bg-black dark:bg-white text-white dark:text-black px-3 py-1.5 rounded-md font-bold text-lg cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+                EDTR
+              </div>
               
               {isEditingTitle ? (
                 <div className="flex items-center space-x-2">
