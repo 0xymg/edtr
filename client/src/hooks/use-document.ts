@@ -227,6 +227,70 @@ export function useDocument() {
     });
   }, [documentState.content, documentState.title, toast]);
 
+  const exportAsHTML = useCallback(() => {
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${documentState.title}</title>
+    <style>
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        p {
+            margin-bottom: 16px;
+        }
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+        li {
+            margin-bottom: 4px;
+        }
+        strong {
+            font-weight: 600;
+        }
+        em {
+            font-style: italic;
+        }
+        u {
+            text-decoration: underline;
+        }
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    ${documentState.content}
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = window.document.createElement('a');
+    a.href = url;
+    a.download = `${documentState.title}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Document Exported",
+      description: `Exported as ${documentState.title}.html`,
+    });
+  }, [documentState.content, documentState.title, toast]);
+
   const exportAsPDF = useCallback(async () => {
     try {
       const margins = PDF_MARGIN_PRESETS[pdfMargins];
@@ -583,6 +647,7 @@ export function useDocument() {
     openDocument,
     saveDocument,
     exportAsText,
+    exportAsHTML,
     exportAsPDF,
     exportAsDocx,
     autoSave,

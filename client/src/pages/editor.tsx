@@ -20,7 +20,7 @@ import { SettingsDialog } from '@/components/settings-dialog';
 
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
-  const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText, exportAsPDF, exportAsDocx, pdfMargins, setPdfMargins, pdfMarginPresets } = useDocument();
+  const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText, exportAsHTML, exportAsPDF, exportAsDocx, pdfMargins, setPdfMargins, pdfMarginPresets } = useDocument();
   const { editor, stats, formatText, setContent, getContent, clearContent, undo, redo, canUndo, canRedo } = useEditor(
     currentDocument.content,
     updateContent
@@ -191,6 +191,10 @@ export default function Editor() {
                   <DropdownMenuItem onClick={exportAsText}>
                     <FileText className="w-4 h-4 mr-2" />
                     Export as Text
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportAsHTML}>
+                    <FileIcon className="w-4 h-4 mr-2" />
+                    Export as HTML
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => exportAsPDF()}>
                     <FileIcon className="w-4 h-4 mr-2" />
