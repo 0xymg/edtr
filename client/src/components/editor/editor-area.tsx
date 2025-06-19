@@ -98,6 +98,119 @@ export function EditorArea({ editor, pdfMargins = 'normal', pdfMarginPresets }: 
     paddingLeft: `${mmToPx(margins.left)}px`,
   };
 
+  // Add CSS for visual page breaks with text flow simulation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'page-break-styles';
+    
+    const pageHeight = a4Height + mmToPx(margins.top) + mmToPx(margins.bottom);
+    
+    style.textContent = `
+      .prose-editor {
+        position: relative;
+      }
+      
+      .prose-editor .ProseMirror {
+        min-height: ${pageHeight * pageCount}px;
+        background-image: repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          transparent ${contentHeight - 20}px,
+          rgba(255, 165, 0, 0.2) ${contentHeight - 20}px,
+          rgba(255, 165, 0, 0.4) ${contentHeight - 10}px,
+          rgba(255, 0, 0, 0.6) ${contentHeight - 5}px,
+          rgba(255, 0, 0, 0.8) ${contentHeight}px,
+          rgba(200, 200, 200, 0.8) ${contentHeight}px,
+          rgba(200, 200, 200, 0.4) ${contentHeight + 10}px,
+          transparent ${contentHeight + 20}px,
+          transparent ${pageHeight}px
+        );
+        background-size: 100% ${pageHeight}px;
+        background-repeat: repeat-y;
+      }
+      
+      /* Add visual page break indicators */
+      .prose-editor .ProseMirror::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background-image: repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          transparent ${contentHeight}px,
+          rgba(200, 200, 200, 0.8) ${contentHeight}px,
+          rgba(200, 200, 200, 0.8) ${contentHeight + 2}px,
+          transparent ${contentHeight + 2}px,
+          transparent ${pageHeight}px
+        );
+        background-size: 100% ${pageHeight}px;
+        pointer-events: none;
+        z-index: 1;
+      }
+      
+      /* Make content flow properly */
+      .prose-editor .ProseMirror > * {
+        position: relative;
+        z-index: 2;
+      }
+      
+      .prose-editor .ProseMirror p {
+        line-height: 1.6;
+        margin-bottom: 1em;
+      }
+      
+      .prose-editor .ProseMirror h1,
+      .prose-editor .ProseMirror h2,
+      .prose-editor .ProseMirror h3,
+      .prose-editor .ProseMirror h4,
+      .prose-editor .ProseMirror h5,
+      .prose-editor .ProseMirror h6 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+        line-height: 1.2;
+      }
+      
+      @media print {
+        .prose-editor .ProseMirror {
+          background: none !important;
+          page-break-inside: auto;
+        }
+        
+        .prose-editor .ProseMirror::after {
+          display: none;
+        }
+        
+        .prose-editor .ProseMirror > * {
+          page-break-inside: avoid;
+        }
+        
+        .prose-editor .ProseMirror h1,
+        .prose-editor .ProseMirror h2,
+        .prose-editor .ProseMirror h3,
+        .prose-editor .ProseMirror h4,
+        .prose-editor .ProseMirror h5,
+        .prose-editor .ProseMirror h6 {
+          page-break-after: avoid;
+        }
+      }
+    `;
+    
+    const existingStyle = document.getElementById('page-break-styles');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
+    document.head.appendChild(style);
+    
+    return () => {
+      const style = document.getElementById('page-break-styles');
+      if (style) style.remove();
+    };
+  }, [a4Height, margins, pageCount, contentHeight]);
+
   return (
     <div className="flex-1 p-8">
       <div ref={editorRef} className="relative">
