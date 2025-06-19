@@ -194,7 +194,7 @@ export default function Editor() {
       </header>
 
       {/* Main Content Container */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col pt-4">
         <div className="max-w-[1200px] mx-auto w-full flex-1 flex flex-col">
           
           {/* Integrated Editor Container */}
@@ -219,9 +219,7 @@ export default function Editor() {
             </div>
 
             {/* Editor Area - Integrated main section */}
-            <div className="flex-1">
-              <EditorArea editor={editor} />
-            </div>
+            <EditorArea editor={editor} />
           </div>
         </div>
       </div>

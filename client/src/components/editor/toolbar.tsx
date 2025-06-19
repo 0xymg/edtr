@@ -89,7 +89,7 @@ export function Toolbar({
   };
 
   return (
-    <div className="px-4 py-2">
+    <div className="px-4 py-3">
       <div className="flex items-center space-x-1 flex-wrap gap-y-2">
           
           {/* File Operations */}
