@@ -5,7 +5,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Color from '@tiptap/extension-color';
 import TextStyle from '@tiptap/extension-text-style';
 import FontFamily from '@tiptap/extension-font-family';
-import { CustomImage } from '@/components/editor/image-extension';
+import Image from '@tiptap/extension-image';
 import { useCallback, useEffect, useState } from 'react';
 
 export interface EditorStats {
@@ -35,7 +35,7 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      CustomImage.configure({
+      Image.configure({
         inline: false,
         allowBase64: true,
         HTMLAttributes: {
@@ -133,6 +133,11 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
         break;
       case 'font-family':
         editor.chain().focus().setFontFamily(options.fontFamily).run();
+        break;
+      case 'image':
+        if (options.src) {
+          editor.chain().focus().setImage({ src: options.src, alt: options.alt || '', title: options.title || '' }).run();
+        }
         break;
     }
   }, [editor]);
