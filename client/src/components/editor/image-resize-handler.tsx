@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Crop, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
-import { CropDialog } from './crop-dialog';
+import { InlineCrop } from './inline-crop';
 
 interface ImageResizeHandlerProps {
   editorRef: React.RefObject<HTMLDivElement>;
@@ -12,7 +12,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   const [showControls, setShowControls] = useState(false);
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
-  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [showInlineCrop, setShowInlineCrop] = useState(false);
 
   const selectImage = (img: HTMLImageElement) => {
     // Clear previous selection
@@ -90,15 +90,22 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     resizeImage(0.8); // 20% smaller
   };
 
-  const openCropDialog = () => {
-    setShowCropDialog(true);
+  const openInlineCrop = () => {
+    setShowInlineCrop(true);
+    setShowControls(false); // Hide toolbar during crop
   };
 
   const handleCropComplete = (croppedDataUrl: string) => {
     if (selectedImage) {
       selectedImage.src = croppedDataUrl;
-      setShowCropDialog(false);
+      setShowInlineCrop(false);
+      setShowControls(true); // Show toolbar again
     }
+  };
+
+  const handleCropCancel = () => {
+    setShowInlineCrop(false);
+    setShowControls(true); // Show toolbar again
   };
 
   const rotateImage = () => {
@@ -177,7 +184,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={openCropDialog}
+            onClick={openInlineCrop}
             title="Crop image"
           >
             <Crop className="h-4 w-4" />
@@ -194,12 +201,11 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
         </div>
       )}
       
-      {selectedImage && (
-        <CropDialog
-          isOpen={showCropDialog}
-          onClose={() => setShowCropDialog(false)}
+      {selectedImage && showInlineCrop && (
+        <InlineCrop
           image={selectedImage}
           onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
         />
       )}
     </>
