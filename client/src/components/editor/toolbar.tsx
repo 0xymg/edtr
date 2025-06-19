@@ -21,6 +21,7 @@ import {
   Search,
   Type,
   ChevronDown,
+  Minus,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -246,6 +247,20 @@ export function Toolbar({
             >
               <Type className="w-4 h-4" />
               <span className="text-xs ml-1">H3</span>
+            </Button>
+          </div>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Horizontal Line */}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => formatText('horizontalRule')}
+              title="Insert Horizontal Line"
+            >
+              <Minus className="w-4 h-4" />
             </Button>
           </div>
 
