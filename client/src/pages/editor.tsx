@@ -102,15 +102,27 @@ export default function Editor() {
 
   const handleToggleMarkdown = () => {
     if (editor) {
-      const currentContent = getContent();
       if (isMarkdownMode) {
         // Converting from markdown to HTML
+        const currentContent = getContent();
         const htmlContent = markdownToHtml(currentContent);
         setContent(htmlContent);
       } else {
         // Converting from HTML to markdown
-        const markdownContent = htmlToMarkdown(currentContent);
-        setContent(markdownContent);
+        const htmlContent = getContent();
+        const textContent = editor.getText();
+        
+        // If it's just plain text without formatting, use the text directly
+        if (textContent.trim() === '') {
+          setContent('');
+        } else if (htmlContent === `<p>${textContent}</p>` || htmlContent.replace(/<[^>]*>/g, '') === textContent) {
+          // Simple case: just plain text in paragraphs
+          setContent(textContent);
+        } else {
+          // Complex case: try to convert HTML to markdown
+          const markdownContent = htmlToMarkdown(htmlContent);
+          setContent(markdownContent);
+        }
       }
     }
     toggleMarkdownMode();
