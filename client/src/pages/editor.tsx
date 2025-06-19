@@ -186,7 +186,8 @@ export default function Editor() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" title="Export Document">
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
                     <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
