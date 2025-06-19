@@ -250,7 +250,6 @@ export default function Editor() {
                 onRedo={redo}
                 onNew={newDocument}
                 onOpen={openDocument}
-                onImportMarkdown={importFromMarkdown}
                 onSave={saveDocument}
                 onExport={exportAsText}
                 onExportPDF={exportAsPDF}

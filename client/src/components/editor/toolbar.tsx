@@ -36,7 +36,6 @@ interface ToolbarProps {
   onRedo: () => void;
   onNew: () => void;
   onOpen: () => void;
-  onImportMarkdown: () => void;
   onSave: () => void;
   onExport: () => void;
   onExportPDF: () => Promise<void>;
@@ -72,7 +71,6 @@ export function Toolbar({
   onRedo,
   onNew,
   onOpen,
-  onImportMarkdown,
   onSave,
   onExport,
   onExportPDF,
@@ -98,24 +96,9 @@ export function Toolbar({
             <Button variant="ghost" size="sm" onClick={onNew} title="New Document (Ctrl+N)">
               <Plus className="w-4 h-4" />
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" title="Open Document">
-                  <FolderOpen className="w-4 h-4 mr-1" />
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={onOpen}>
-                  <File className="w-4 h-4 mr-2" />
-                  Open Document
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onImportMarkdown}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Import Markdown
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="ghost" size="sm" onClick={onOpen} title="Open Document (Ctrl+O)">
+              <FolderOpen className="w-4 h-4" />
+            </Button>
             <Button variant="ghost" size="sm" onClick={onSave} title="Save Document (Ctrl+S)">
               <Save className="w-4 h-4" />
             </Button>
