@@ -7,8 +7,9 @@ import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
 import { useState } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
@@ -19,6 +20,33 @@ export default function Editor() {
   );
   
   const [findReplaceOpen, setFindReplaceOpen] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editingTitle, setEditingTitle] = useState('');
+
+  const startEditingTitle = () => {
+    setEditingTitle(currentDocument.title);
+    setIsEditingTitle(true);
+  };
+
+  const saveTitle = () => {
+    if (editingTitle.trim()) {
+      updateTitle(editingTitle.trim());
+    }
+    setIsEditingTitle(false);
+  };
+
+  const cancelEditingTitle = () => {
+    setIsEditingTitle(false);
+    setEditingTitle('');
+  };
+
+  const handleTitleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      saveTitle();
+    } else if (e.key === 'Escape') {
+      cancelEditingTitle();
+    }
+  };
 
   // Update editor content when document changes
   useEffect(() => {
@@ -104,9 +132,43 @@ export default function Editor() {
         <div className="max-w-[1200px] mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">WordPad Pro</h1>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {currentDocument.title}
-            </span>
+            
+            {isEditingTitle ? (
+              <div className="flex items-center space-x-2">
+                <Input
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onKeyDown={handleTitleKeyPress}
+                  className="text-sm w-48"
+                  placeholder="Document name"
+                  autoFocus
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={saveTitle}
+                  className="p-1 h-6 w-6"
+                >
+                  <Check className="w-3 h-3 text-green-600" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={cancelEditingTitle}
+                  className="p-1 h-6 w-6"
+                >
+                  <X className="w-3 h-3 text-red-600" />
+                </Button>
+              </div>
+            ) : (
+              <span 
+                className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 hover:underline"
+                onClick={startEditingTitle}
+                title="Click to rename document"
+              >
+                {currentDocument.title}
+              </span>
+            )}
           </div>
           
           <div className="flex items-center space-x-3">
