@@ -111,6 +111,7 @@ The application is configured for deployment on Replit's autoscale infrastructur
 Changelog:
 - June 19, 2025. Initial setup
 - June 19, 2025. Added comprehensive image resize functionality with bigger/smaller controls, positioned toolbar near selected images, and simplified user interface for easy image manipulation
+- June 19, 2025. Added image rotation functionality with 90-degree clockwise rotation button in the image toolbar
 ```
 
 ## User Preferences

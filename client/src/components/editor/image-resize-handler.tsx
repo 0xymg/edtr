@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Crop, ZoomIn, ZoomOut } from 'lucide-react';
+import { Crop, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { CropDialog } from './crop-dialog';
 
 interface ImageResizeHandlerProps {
@@ -101,6 +101,25 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     }
   };
 
+  const rotateImage = () => {
+    if (!selectedImage) return;
+    
+    // Get current rotation or start at 0
+    const currentTransform = selectedImage.style.transform || '';
+    const rotateMatch = currentTransform.match(/rotate\((-?\d+)deg\)/);
+    const currentRotation = rotateMatch ? parseInt(rotateMatch[1]) : 0;
+    
+    // Rotate by 90 degrees
+    const newRotation = (currentRotation + 90) % 360;
+    
+    // Apply rotation transform
+    const otherTransforms = currentTransform.replace(/rotate\(-?\d+deg\)\s?/g, '').trim();
+    const newTransform = `${otherTransforms} rotate(${newRotation}deg)`.trim();
+    
+    selectedImage.style.transform = newTransform;
+    selectedImage.style.transformOrigin = 'center center';
+  };
+
   const resetImageSize = () => {
     if (!selectedImage) return;
     
@@ -162,6 +181,15 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
             title="Crop image"
           >
             <Crop className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={rotateImage}
+            title="Rotate 90° clockwise"
+          >
+            <RotateCw className="h-4 w-4" />
           </Button>
         </div>
       )}
