@@ -238,12 +238,14 @@ export function useDocument() {
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
       tempDiv.style.width = `${contentWidth * 3.78}px`; // Convert mm to px (approx)
-      tempDiv.style.padding = `${margins.top * 3.78}px ${margins.right * 3.78}px ${margins.bottom * 3.78}px ${margins.left * 3.78}px`;
+      tempDiv.style.padding = `${margins.top * 3.78 + 20}px ${margins.right * 3.78}px ${margins.bottom * 3.78 + 20}px ${margins.left * 3.78}px`; // Add extra padding
       tempDiv.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       tempDiv.style.fontSize = '16px';
       tempDiv.style.lineHeight = '1.6';
       tempDiv.style.color = '#000000';
       tempDiv.style.backgroundColor = '#ffffff';
+      tempDiv.style.wordBreak = 'break-word';
+      tempDiv.style.pageBreakInside = 'avoid';
       
       // Apply specific styles to headings to ensure they're captured properly
       const h1Elements = tempDiv.querySelectorAll('h1');
@@ -334,25 +336,52 @@ export function useDocument() {
 
       window.document.body.removeChild(tempDiv);
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = contentWidth;
-      const pageHeight = 297 - margins.top - margins.bottom; // A4 height minus margins
+      const pageHeight = 297 - margins.top - margins.bottom - 15; // Reduced available height for safety
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-
-      let position = margins.top;
-
-      // Add first page
-      pdf.addImage(imgData, 'PNG', margins.left, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Add subsequent pages with proper positioning
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight + margins.top;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', margins.left, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      
+      let currentY = 0;
+      let pageNumber = 0;
+      
+      while (currentY < canvas.height) {
+        if (pageNumber > 0) {
+          pdf.addPage();
+        }
+        
+        // Calculate the slice height for this page
+        const remainingHeight = canvas.height - currentY;
+        const sliceHeight = Math.min(pageHeight * (canvas.height / imgHeight), remainingHeight);
+        
+        // Create a canvas for this page slice
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+        
+        if (pageCtx) {
+          // Fill with white background
+          pageCtx.fillStyle = '#ffffff';
+          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          
+          // Draw the slice from the main canvas
+          pageCtx.drawImage(
+            canvas,
+            0, currentY, // source x, y
+            canvas.width, sliceHeight, // source width, height
+            0, 0, // destination x, y
+            canvas.width, sliceHeight // destination width, height
+          );
+          
+          // Convert to image and add to PDF
+          const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
+          const pageImgHeight = (sliceHeight * imgWidth) / canvas.width;
+          
+          pdf.addImage(pageImgData, 'PNG', margins.left, margins.top + 5, imgWidth, pageImgHeight);
+        }
+        
+        currentY += sliceHeight;
+        pageNumber++;
       }
 
       pdf.save(`${documentState.title}.pdf`);
