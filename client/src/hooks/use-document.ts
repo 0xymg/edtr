@@ -338,8 +338,12 @@ export function useDocument() {
 
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = contentWidth;
-      const pageHeight = 297 - margins.top - margins.bottom - 15; // Reduced available height for safety
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Calculate usable page height in mm, then convert to pixels
+      const usablePageHeightMM = 297 - margins.top - margins.bottom - 10; // A4 height minus margins and safety
+      const pixelsPerMM = canvas.height / imgHeight;
+      const pageHeightPixels = usablePageHeightMM * pixelsPerMM;
       
       let currentY = 0;
       let pageNumber = 0;
@@ -349,38 +353,36 @@ export function useDocument() {
           pdf.addPage();
         }
         
-        // Calculate the slice height for this page
-        const remainingHeight = canvas.height - currentY;
-        const sliceHeight = Math.min(pageHeight * (canvas.height / imgHeight), remainingHeight);
+        // Calculate how much content fits on this page
+        const remainingContent = canvas.height - currentY;
+        const contentForThisPage = Math.min(pageHeightPixels, remainingContent);
         
-        // Create a canvas for this page slice
+        // Create canvas for this page
         const pageCanvas = document.createElement('canvas');
         const pageCtx = pageCanvas.getContext('2d');
         pageCanvas.width = canvas.width;
-        pageCanvas.height = sliceHeight;
+        pageCanvas.height = contentForThisPage;
         
         if (pageCtx) {
-          // Fill with white background
+          // White background
           pageCtx.fillStyle = '#ffffff';
           pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
           
-          // Draw the slice from the main canvas
+          // Draw content slice
           pageCtx.drawImage(
             canvas,
-            0, currentY, // source x, y
-            canvas.width, sliceHeight, // source width, height
-            0, 0, // destination x, y
-            canvas.width, sliceHeight // destination width, height
+            0, currentY, canvas.width, contentForThisPage,
+            0, 0, canvas.width, contentForThisPage
           );
           
-          // Convert to image and add to PDF
+          // Add to PDF
           const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
-          const pageImgHeight = (sliceHeight * imgWidth) / canvas.width;
+          const pageHeightMM = contentForThisPage / pixelsPerMM;
           
-          pdf.addImage(pageImgData, 'PNG', margins.left, margins.top + 5, imgWidth, pageImgHeight);
+          pdf.addImage(pageImgData, 'PNG', margins.left, margins.top + 2, imgWidth, pageHeightMM);
         }
         
-        currentY += sliceHeight;
+        currentY += contentForThisPage;
         pageNumber++;
       }
 
