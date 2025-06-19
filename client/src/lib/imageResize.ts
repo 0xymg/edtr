@@ -50,7 +50,11 @@ export function enableImageResize() {
   }
 
   function addResizeHandle(img: HTMLImageElement) {
-    if (img.parentElement?.querySelector('.image-resize-handle')) return;
+    console.log('Adding resize handle to image:', img);
+    if (img.parentElement?.querySelector('.image-resize-handle')) {
+      console.log('Image already has resize handles');
+      return;
+    }
 
     const wrapper = document.createElement('div');
     wrapper.className = 'image-wrapper';
@@ -69,12 +73,15 @@ export function enableImageResize() {
     img.style.height = 'auto';
     aspectRatio = img.naturalHeight / img.naturalWidth;
 
+    console.log('Creating resize handles, count:', handlePositions.length);
     // Create all 8 resize handles
     handlePositions.forEach(config => {
       const handle = createResizeHandle(config);
       wrapper.appendChild(handle);
+      console.log('Added handle:', config.position);
 
       handle.addEventListener('mousedown', (e) => {
+        console.log('Handle mousedown:', config.position);
         e.preventDefault();
         e.stopPropagation();
         isResizing = true;
@@ -156,8 +163,11 @@ export function enableImageResize() {
   }
 
   function handleImageClick(e: Event) {
+    e.stopPropagation();
     const target = e.target as HTMLElement;
+    console.log('Image clicked:', target.tagName, target);
     if (target.tagName === 'IMG') {
+      console.log('Processing image click');
       // Remove selection from other images
       document.querySelectorAll('.image-wrapper.selected').forEach(wrapper => {
         wrapper.classList.remove('selected');
@@ -170,6 +180,7 @@ export function enableImageResize() {
       const wrapper = target.closest('.image-wrapper');
       if (wrapper) {
         wrapper.classList.add('selected');
+        console.log('Added selected class to wrapper');
       }
     }
   }
@@ -185,19 +196,30 @@ export function enableImageResize() {
     }
   }
 
-  // Initialize event listeners
-  document.addEventListener('click', handleImageClick);
-  document.addEventListener('click', handleDocumentClick);
+  // Initialize event listeners with delegation
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'IMG' && target.closest('.prose-editor')) {
+      handleImageClick(e);
+    } else {
+      handleDocumentClick(e);
+    }
+  });
 
-  // Observer for new images
+  // Observer for new images in the editor
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const element = node as Element;
-          const images = element.querySelectorAll('img.editor-image');
+          const images = element.querySelectorAll('img');
           images.forEach((img) => {
-            img.addEventListener('click', handleImageClick);
+            if (img.closest('.prose-editor')) {
+              // Ensure image has proper styling
+              img.style.maxWidth = '100%';
+              img.style.height = 'auto';
+              img.style.cursor = 'pointer';
+            }
           });
         }
       });
@@ -208,10 +230,11 @@ export function enableImageResize() {
 
   return {
     destroy: () => {
-      document.removeEventListener('click', handleImageClick);
-      document.removeEventListener('click', handleDocumentClick);
       observer.disconnect();
       removeAllHandles();
+      document.querySelectorAll('.image-wrapper.selected').forEach(wrapper => {
+        wrapper.classList.remove('selected');
+      });
     }
   };
 }
