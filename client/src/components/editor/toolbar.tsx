@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -71,6 +72,8 @@ export function Toolbar({
   onOpen,
   onSave,
   onExport,
+  onExportPDF,
+  onExportDocx,
   onFindReplace,
 }: ToolbarProps) {
   const [selectedColor, setSelectedColor] = useState('#000000');
@@ -100,9 +103,29 @@ export function Toolbar({
             <Button variant="ghost" size="sm" onClick={onSave} title="Save Document (Ctrl+S)">
               <Save className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={onExport} title="Export as Text">
-              <Download className="w-4 h-4" />
-            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" title="Export Document">
+                  <Download className="w-4 h-4" />
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={onExport}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export as Text
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onExportPDF}>
+                  <File className="w-4 h-4 mr-2" />
+                  Export as PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onExportDocx}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export as DOCX
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <Separator orientation="vertical" className="h-6" />
