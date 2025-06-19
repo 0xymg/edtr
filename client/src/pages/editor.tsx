@@ -195,27 +195,34 @@ export default function Editor() {
 
       {/* Main Content Container */}
       <div className="flex-1 flex flex-col">
-        <div className="max-w-[1200px] mx-auto w-full flex-1 flex flex-col bg-white dark:bg-gray-800">
+        <div className="max-w-[1200px] mx-auto w-full flex-1 flex flex-col">
           
-          {/* Toolbar */}
-          <Toolbar
-            editor={editor}
-            formatText={formatText}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onUndo={undo}
-            onRedo={redo}
-            onNew={newDocument}
-            onOpen={openDocument}
-            onSave={saveDocument}
-            onExport={exportAsText}
-            onExportPDF={exportAsPDF}
-            onExportDocx={exportAsDocx}
-            onFindReplace={() => setFindReplaceOpen(true)}
-          />
+          {/* Integrated Editor Container */}
+          <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            {/* Toolbar - Integrated top section */}
+            <div className="border-b border-gray-200 dark:border-gray-700">
+              <Toolbar
+                editor={editor}
+                formatText={formatText}
+                canUndo={canUndo}
+                canRedo={canRedo}
+                onUndo={undo}
+                onRedo={redo}
+                onNew={newDocument}
+                onOpen={openDocument}
+                onSave={saveDocument}
+                onExport={exportAsText}
+                onExportPDF={exportAsPDF}
+                onExportDocx={exportAsDocx}
+                onFindReplace={() => setFindReplaceOpen(true)}
+              />
+            </div>
 
-          {/* Editor Area */}
-          <EditorArea editor={editor} />
+            {/* Editor Area - Integrated main section */}
+            <div className="flex-1">
+              <EditorArea editor={editor} />
+            </div>
+          </div>
         </div>
       </div>
 
