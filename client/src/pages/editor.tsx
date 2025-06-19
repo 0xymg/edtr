@@ -182,10 +182,21 @@ export default function Editor() {
         onSave={saveDocument}
         onExport={exportAsText}
         onFindReplace={() => setFindReplaceOpen(true)}
+        isMarkdownMode={isMarkdownMode}
+        onToggleMarkdown={handleToggleMarkdown}
+        onExportMarkdown={handleExportMarkdown}
       />
 
       {/* Editor Area */}
-      <EditorArea editor={editor} />
+      {isMarkdownMode ? (
+        <MarkdownEditor 
+          content={getContent()} 
+          onChange={updateContent}
+          className="flex-1"
+        />
+      ) : (
+        <EditorArea editor={editor} />
+      )}
 
       {/* Status Bar */}
       <StatusBar
