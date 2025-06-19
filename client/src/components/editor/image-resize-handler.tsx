@@ -127,15 +127,6 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => setLockAspectRatio(!lockAspectRatio)}
-        title={lockAspectRatio ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
-      >
-        {lockAspectRatio ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
         onClick={makeBigger}
         title="Make bigger"
       >
@@ -149,24 +140,6 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
         title="Make smaller"
       >
         <ZoomOut className="h-4 w-4" />
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={resetImageSize}
-        title="Reset to original size"
-      >
-        <RotateCw className="h-4 w-4" />
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={clearSelection}
-        title="Close"
-      >
-        <X className="h-4 w-4" />
       </Button>
     </div>
   );
