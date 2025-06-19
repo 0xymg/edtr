@@ -7,6 +7,8 @@ import {
   FolderOpen,
   Save,
   Download,
+  FileText,
+  File,
   Undo,
   Redo,
   Bold,
@@ -18,6 +20,7 @@ import {
   AlignRight,
   Search,
   Type,
+  ChevronDown,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -33,6 +36,8 @@ interface ToolbarProps {
   onOpen: () => void;
   onSave: () => void;
   onExport: () => void;
+  onExportPDF: () => Promise<void>;
+  onExportDocx: () => Promise<void>;
   onFindReplace: () => void;
 }
 

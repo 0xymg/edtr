@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
-  const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText } = useDocument();
+  const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText, exportAsPDF, exportAsDocx } = useDocument();
   const { editor, stats, formatText, setContent, getContent, clearContent, undo, redo, canUndo, canRedo } = useEditor(
     currentDocument.content,
     updateContent
@@ -143,6 +143,8 @@ export default function Editor() {
         onOpen={openDocument}
         onSave={saveDocument}
         onExport={exportAsText}
+        onExportPDF={exportAsPDF}
+        onExportDocx={exportAsDocx}
         onFindReplace={() => setFindReplaceOpen(true)}
       />
 
