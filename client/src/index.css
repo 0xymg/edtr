@@ -151,41 +151,11 @@
   margin: 1rem 0;
   display: block;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  position: relative;
-  resize: both;
-  overflow: hidden;
-  min-width: 100px;
-  min-height: 100px;
+  transition: transform 0.2s ease-in-out;
 }
 
 .prose-editor .editor-image:hover {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-.prose-editor .editor-image:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-.prose-editor .editor-image.ProseMirror-selectednode {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-.prose-editor .editor-image.ProseMirror-selectednode::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  right: -5px;
-  width: 10px;
-  height: 10px;
-  background: #3b82f6;
-  border: 2px solid white;
-  border-radius: 50%;
-  cursor: nw-resize;
-  z-index: 10;
+  transform: scale(1.02);
 }
 
 .prose-editor img {
@@ -194,82 +164,6 @@
   border-radius: 8px;
   margin: 1rem 0;
   display: block;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  resize: both;
-  overflow: hidden;
-  min-width: 100px;
-  min-height: 100px;
-}
-
-.prose-editor img:hover {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-.prose-editor img:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-.image-wrapper {
-  position: relative;
-  display: inline-block;
-  margin: 1rem 0;
-  max-width: 100%;
-}
-
-.image-wrapper img {
-  margin: 0;
-}
-
-.image-resize-handle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #3b82f6;
-  border: 2px solid white;
-  border-radius: 2px;
-  z-index: 1000;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.image-wrapper:hover .image-resize-handle,
-.image-wrapper.selected .image-resize-handle {
-  opacity: 1;
-}
-
-.image-wrapper.selected {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* Corner handles - square shape */
-.resize-top-left,
-.resize-top-right,
-.resize-bottom-left,
-.resize-bottom-right {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-
-/* Edge handles - rectangular shape */
-.resize-top,
-.resize-bottom {
-  width: 20px;
-  height: 6px;
-  border-radius: 3px;
-}
-
-.resize-left,
-.resize-right {
-  width: 6px;
-  height: 20px;
-  border-radius: 3px;
 }
 
 .prose-editor pre {
