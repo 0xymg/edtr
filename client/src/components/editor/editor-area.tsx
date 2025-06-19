@@ -21,16 +21,12 @@ export function EditorArea({ editor, pdfMargins = 'normal', pdfMarginPresets }: 
   };
 
   return (
-    <div className="flex-1 p-8">
-      <div 
-        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm min-h-[600px]"
+    <div className="flex-1">
+      <EditorContent 
+        editor={editor} 
+        className="prose-editor focus:outline-none min-h-[600px]"
         style={paddingStyle}
-      >
-        <EditorContent 
-          editor={editor} 
-          className="prose-editor focus:outline-none min-h-full"
-        />
-      </div>
+      />
     </div>
   );
 }
