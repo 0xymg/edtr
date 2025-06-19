@@ -11,7 +11,7 @@ export interface DocumentState {
 
 export function useDocument() {
   const { toast } = useToast();
-  const [document, setDocument] = useState<DocumentState>({
+  const [documentState, setDocumentState] = useState<DocumentState>({
     title: 'Untitled Document',
     content: '',
     isDirty: false,
@@ -21,36 +21,36 @@ export function useDocument() {
 
   // Auto-save functionality
   useEffect(() => {
-    if (!document.isDirty) return;
+    if (!documentState.isDirty) return;
 
     const timer = setTimeout(() => {
       autoSave();
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [document.content, document.isDirty]);
+  }, [documentState.content, documentState.isDirty]);
 
   const autoSave = useCallback(async () => {
-    if (!document.isDirty) return;
+    if (!documentState.isDirty) return;
 
-    setDocument(prev => ({ ...prev, isSaving: true }));
+    setDocumentState(prev => ({ ...prev, isSaving: true }));
 
     // Simulate save delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // In a real app, this would save to backend
     localStorage.setItem('current-document', JSON.stringify({
-      title: document.title,
-      content: document.content,
+      title: documentState.title,
+      content: documentState.content,
     }));
 
-    setDocument(prev => ({
+    setDocumentState(prev => ({
       ...prev,
       isDirty: false,
       isSaving: false,
       lastSaved: new Date(),
     }));
-  }, [document.content, document.title, document.isDirty]);
+  }, [documentState.content, documentState.title, documentState.isDirty]);
 
   const updateContent = useCallback((content: string) => {
     setDocument(prev => ({
@@ -89,7 +89,7 @@ export function useDocument() {
   }, [document.isDirty, toast]);
 
   const openDocument = useCallback(() => {
-    const input = document.createElement('input');
+    const input = window.document.createElement('input');
     input.type = 'file';
     input.accept = '.html,.txt';
     
@@ -126,7 +126,7 @@ export function useDocument() {
   const saveDocument = useCallback(() => {
     const blob = new Blob([document.content], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = window.document.createElement('a');
     a.href = url;
     a.download = `${document.title}.html`;
     a.click();
@@ -146,13 +146,13 @@ export function useDocument() {
 
   const exportAsText = useCallback(() => {
     // Create a temporary div to extract plain text from HTML
-    const div = document.createElement('div');
+    const div = window.document.createElement('div');
     div.innerHTML = document.content;
     const plainText = div.textContent || div.innerText || '';
     
     const blob = new Blob([plainText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = window.document.createElement('a');
     a.href = url;
     a.download = `${document.title}.txt`;
     a.click();
