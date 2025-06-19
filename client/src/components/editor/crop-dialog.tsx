@@ -17,12 +17,16 @@ interface CropArea {
   height: number;
 }
 
+type ResizeHandle = 'move' | 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
+
 export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialogProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [cropArea, setCropArea] = useState<CropArea>({ x: 50, y: 50, width: 200, height: 150 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [activeHandle, setActiveHandle] = useState<ResizeHandle | null>(null);
+  const [originalCropArea, setOriginalCropArea] = useState<CropArea>({ x: 50, y: 50, width: 200, height: 150 });
 
   useEffect(() => {
     if (isOpen && image) {
@@ -84,23 +88,57 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
       cropArea.height * scale
     );
 
-    // Draw corner handles
+    // Draw resize handles
     const handleSize = 8;
     ctx.fillStyle = '#3b82f6';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
     
-    // Top-left
-    ctx.fillRect(cropArea.x * scale - handleSize/2, cropArea.y * scale - handleSize/2, handleSize, handleSize);
-    // Top-right
-    ctx.fillRect((cropArea.x + cropArea.width) * scale - handleSize/2, cropArea.y * scale - handleSize/2, handleSize, handleSize);
-    // Bottom-left
-    ctx.fillRect(cropArea.x * scale - handleSize/2, (cropArea.y + cropArea.height) * scale - handleSize/2, handleSize, handleSize);
-    // Bottom-right
-    ctx.fillRect((cropArea.x + cropArea.width) * scale - handleSize/2, (cropArea.y + cropArea.height) * scale - handleSize/2, handleSize, handleSize);
+    // Corner handles
+    const handles = [
+      { x: cropArea.x * scale, y: cropArea.y * scale }, // nw
+      { x: (cropArea.x + cropArea.width) * scale, y: cropArea.y * scale }, // ne
+      { x: cropArea.x * scale, y: (cropArea.y + cropArea.height) * scale }, // sw
+      { x: (cropArea.x + cropArea.width) * scale, y: (cropArea.y + cropArea.height) * scale }, // se
+      // Edge handles
+      { x: (cropArea.x + cropArea.width/2) * scale, y: cropArea.y * scale }, // n
+      { x: (cropArea.x + cropArea.width/2) * scale, y: (cropArea.y + cropArea.height) * scale }, // s
+      { x: cropArea.x * scale, y: (cropArea.y + cropArea.height/2) * scale }, // w
+      { x: (cropArea.x + cropArea.width) * scale, y: (cropArea.y + cropArea.height/2) * scale }, // e
+    ];
+    
+    handles.forEach(handle => {
+      ctx.fillRect(handle.x - handleSize/2, handle.y - handleSize/2, handleSize, handleSize);
+      ctx.strokeRect(handle.x - handleSize/2, handle.y - handleSize/2, handleSize, handleSize);
+    });
   }, [image, cropArea, imageLoaded]);
 
   useEffect(() => {
     drawCanvas();
   }, [drawCanvas]);
+
+  const getHandleAtPosition = (x: number, y: number, scale: number): ResizeHandle | null => {
+    const handleSize = 8;
+    const threshold = handleSize / scale;
+    
+    // Check corner handles
+    if (Math.abs(x - cropArea.x) <= threshold && Math.abs(y - cropArea.y) <= threshold) return 'nw';
+    if (Math.abs(x - (cropArea.x + cropArea.width)) <= threshold && Math.abs(y - cropArea.y) <= threshold) return 'ne';
+    if (Math.abs(x - cropArea.x) <= threshold && Math.abs(y - (cropArea.y + cropArea.height)) <= threshold) return 'sw';
+    if (Math.abs(x - (cropArea.x + cropArea.width)) <= threshold && Math.abs(y - (cropArea.y + cropArea.height)) <= threshold) return 'se';
+    
+    // Check edge handles
+    if (Math.abs(x - (cropArea.x + cropArea.width/2)) <= threshold && Math.abs(y - cropArea.y) <= threshold) return 'n';
+    if (Math.abs(x - (cropArea.x + cropArea.width/2)) <= threshold && Math.abs(y - (cropArea.y + cropArea.height)) <= threshold) return 's';
+    if (Math.abs(x - cropArea.x) <= threshold && Math.abs(y - (cropArea.y + cropArea.height/2)) <= threshold) return 'w';
+    if (Math.abs(x - (cropArea.x + cropArea.width)) <= threshold && Math.abs(y - (cropArea.y + cropArea.height/2)) <= threshold) return 'e';
+    
+    // Check if inside crop area (for moving)
+    if (x >= cropArea.x && x <= cropArea.x + cropArea.width && 
+        y >= cropArea.y && y <= cropArea.y + cropArea.height) return 'move';
+    
+    return null;
+  };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -111,12 +149,17 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
     const x = (e.clientX - rect.left) / scale;
     const y = (e.clientY - rect.top) / scale;
 
+    const handle = getHandleAtPosition(x, y, scale);
+    if (!handle) return;
+
+    setActiveHandle(handle);
     setIsDragging(true);
     setDragStart({ x, y });
+    setOriginalCropArea({ ...cropArea });
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || !activeHandle) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -129,19 +172,83 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
     const deltaX = x - dragStart.x;
     const deltaY = y - dragStart.y;
 
-    setCropArea(prev => ({
-      x: Math.max(0, Math.min(prev.x + deltaX, image.naturalWidth - prev.width)),
-      y: Math.max(0, Math.min(prev.y + deltaY, image.naturalHeight - prev.height)),
-      width: prev.width,
-      height: prev.height
-    }));
+    let newCropArea = { ...originalCropArea };
 
-    setDragStart({ x, y });
-  }, [isDragging, dragStart, image]);
+    switch (activeHandle) {
+      case 'move':
+        newCropArea.x = Math.max(0, Math.min(originalCropArea.x + deltaX, image.naturalWidth - originalCropArea.width));
+        newCropArea.y = Math.max(0, Math.min(originalCropArea.y + deltaY, image.naturalHeight - originalCropArea.height));
+        break;
+      case 'nw':
+        newCropArea.x = Math.max(0, Math.min(originalCropArea.x + deltaX, originalCropArea.x + originalCropArea.width - 20));
+        newCropArea.y = Math.max(0, Math.min(originalCropArea.y + deltaY, originalCropArea.y + originalCropArea.height - 20));
+        newCropArea.width = originalCropArea.width - deltaX;
+        newCropArea.height = originalCropArea.height - deltaY;
+        break;
+      case 'ne':
+        newCropArea.y = Math.max(0, Math.min(originalCropArea.y + deltaY, originalCropArea.y + originalCropArea.height - 20));
+        newCropArea.width = Math.max(20, Math.min(originalCropArea.width + deltaX, image.naturalWidth - originalCropArea.x));
+        newCropArea.height = originalCropArea.height - deltaY;
+        break;
+      case 'sw':
+        newCropArea.x = Math.max(0, Math.min(originalCropArea.x + deltaX, originalCropArea.x + originalCropArea.width - 20));
+        newCropArea.width = originalCropArea.width - deltaX;
+        newCropArea.height = Math.max(20, Math.min(originalCropArea.height + deltaY, image.naturalHeight - originalCropArea.y));
+        break;
+      case 'se':
+        newCropArea.width = Math.max(20, Math.min(originalCropArea.width + deltaX, image.naturalWidth - originalCropArea.x));
+        newCropArea.height = Math.max(20, Math.min(originalCropArea.height + deltaY, image.naturalHeight - originalCropArea.y));
+        break;
+      case 'n':
+        newCropArea.y = Math.max(0, Math.min(originalCropArea.y + deltaY, originalCropArea.y + originalCropArea.height - 20));
+        newCropArea.height = originalCropArea.height - deltaY;
+        break;
+      case 's':
+        newCropArea.height = Math.max(20, Math.min(originalCropArea.height + deltaY, image.naturalHeight - originalCropArea.y));
+        break;
+      case 'w':
+        newCropArea.x = Math.max(0, Math.min(originalCropArea.x + deltaX, originalCropArea.x + originalCropArea.width - 20));
+        newCropArea.width = originalCropArea.width - deltaX;
+        break;
+      case 'e':
+        newCropArea.width = Math.max(20, Math.min(originalCropArea.width + deltaX, image.naturalWidth - originalCropArea.x));
+        break;
+    }
+
+    setCropArea(newCropArea);
+  }, [isDragging, activeHandle, dragStart, originalCropArea, image]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
+    setActiveHandle(null);
   }, []);
+
+  const getCursorStyle = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDragging) return 'grabbing';
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return 'default';
+
+    const rect = canvas.getBoundingClientRect();
+    const scale = canvas.width / image.naturalWidth;
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
+
+    const handle = getHandleAtPosition(x, y, scale);
+    
+    switch (handle) {
+      case 'move': return 'grab';
+      case 'nw':
+      case 'se': return 'nw-resize';
+      case 'ne':
+      case 'sw': return 'ne-resize';
+      case 'n':
+      case 's': return 'ns-resize';
+      case 'e':
+      case 'w': return 'ew-resize';
+      default: return 'default';
+    }
+  };
 
   useEffect(() => {
     if (isDragging) {
@@ -189,8 +296,12 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
         <div className="flex justify-center p-4">
           <canvas
             ref={canvasRef}
-            className="border border-gray-300 cursor-move"
+            className="border border-gray-300"
             onMouseDown={handleMouseDown}
+            onMouseMove={(e) => {
+              const canvas = e.currentTarget;
+              canvas.style.cursor = getCursorStyle(e);
+            }}
             style={{ maxWidth: '100%', height: 'auto' }}
           />
         </div>
