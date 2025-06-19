@@ -73,6 +73,18 @@ export default function Editor() {
             e.preventDefault();
             formatText('underline');
             break;
+          case '1':
+            e.preventDefault();
+            formatText('heading-1');
+            break;
+          case '2':
+            e.preventDefault();
+            formatText('heading-2');
+            break;
+          case '3':
+            e.preventDefault();
+            formatText('heading-3');
+            break;
         }
       }
       
