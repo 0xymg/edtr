@@ -81,6 +81,15 @@ export function useEditor(initialContent: string = '', onUpdate?: (content: stri
       case 'underline':
         editor.chain().focus().toggleUnderline().run();
         break;
+      case 'heading-1':
+        editor.chain().focus().toggleHeading({ level: 1 }).run();
+        break;
+      case 'heading-2':
+        editor.chain().focus().toggleHeading({ level: 2 }).run();
+        break;
+      case 'heading-3':
+        editor.chain().focus().toggleHeading({ level: 3 }).run();
+        break;
       case 'align-left':
         editor.chain().focus().setTextAlign('left').run();
         break;

@@ -53,7 +53,7 @@ export function useDocument() {
   }, [documentState.content, documentState.title, documentState.isDirty]);
 
   const updateContent = useCallback((content: string) => {
-    setDocument(prev => ({
+    setDocumentState(prev => ({
       ...prev,
       content,
       isDirty: content !== prev.content,
@@ -61,7 +61,7 @@ export function useDocument() {
   }, []);
 
   const updateTitle = useCallback((title: string) => {
-    setDocument(prev => ({
+    setDocumentState(prev => ({
       ...prev,
       title,
       isDirty: true,
@@ -69,12 +69,12 @@ export function useDocument() {
   }, []);
 
   const newDocument = useCallback(() => {
-    if (document.isDirty) {
+    if (documentState.isDirty) {
       const shouldContinue = confirm('You have unsaved changes. Are you sure you want to create a new document?');
       if (!shouldContinue) return;
     }
 
-    setDocument({
+    setDocumentState({
       title: 'Untitled Document',
       content: '',
       isDirty: false,
@@ -86,7 +86,7 @@ export function useDocument() {
       title: "New Document",
       description: "Created a new document.",
     });
-  }, [document.isDirty, toast]);
+  }, [documentState.isDirty, toast]);
 
   const openDocument = useCallback(() => {
     const input = window.document.createElement('input');
@@ -99,7 +99,7 @@ export function useDocument() {
 
       try {
         const content = await file.text();
-        setDocument({
+        setDocumentState({
           title: file.name.replace(/\.[^/.]+$/, ''),
           content,
           isDirty: false,
@@ -124,15 +124,15 @@ export function useDocument() {
   }, [toast]);
 
   const saveDocument = useCallback(() => {
-    const blob = new Blob([document.content], { type: 'text/html' });
+    const blob = new Blob([documentState.content], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = window.document.createElement('a');
     a.href = url;
-    a.download = `${document.title}.html`;
+    a.download = `${documentState.title}.html`;
     a.click();
     URL.revokeObjectURL(url);
 
-    setDocument(prev => ({
+    setDocumentState(prev => ({
       ...prev,
       isDirty: false,
       lastSaved: new Date(),
@@ -140,29 +140,29 @@ export function useDocument() {
 
     toast({
       title: "Document Saved",
-      description: `Saved as ${document.title}.html`,
+      description: `Saved as ${documentState.title}.html`,
     });
-  }, [document.content, document.title, toast]);
+  }, [documentState.content, documentState.title, toast]);
 
   const exportAsText = useCallback(() => {
     // Create a temporary div to extract plain text from HTML
     const div = window.document.createElement('div');
-    div.innerHTML = document.content;
+    div.innerHTML = documentState.content;
     const plainText = div.textContent || div.innerText || '';
     
     const blob = new Blob([plainText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = window.document.createElement('a');
     a.href = url;
-    a.download = `${document.title}.txt`;
+    a.download = `${documentState.title}.txt`;
     a.click();
     URL.revokeObjectURL(url);
 
     toast({
       title: "Document Exported",
-      description: `Exported as ${document.title}.txt`,
+      description: `Exported as ${documentState.title}.txt`,
     });
-  }, [document.content, document.title, toast]);
+  }, [documentState.content, documentState.title, toast]);
 
   // Load document from localStorage on mount
   useEffect(() => {
@@ -170,7 +170,7 @@ export function useDocument() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setDocument(prev => ({
+        setDocumentState(prev => ({
           ...prev,
           title: parsed.title || 'Untitled Document',
           content: parsed.content || '',
@@ -183,7 +183,7 @@ export function useDocument() {
   }, []);
 
   return {
-    document,
+    document: documentState,
     updateContent,
     updateTitle,
     newDocument,

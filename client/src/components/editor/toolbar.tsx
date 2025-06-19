@@ -17,6 +17,7 @@ import {
   AlignCenter,
   AlignRight,
   Search,
+  Type,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -184,6 +185,39 @@ export function Toolbar({
               title="Underline (Ctrl+U)"
             >
               <Underline className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Heading Styles */}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant={editor.isActive('heading', { level: 1 }) ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => formatText('heading-1')}
+              title="Heading 1"
+            >
+              <Type className="w-4 h-4" />
+              <span className="text-xs ml-1">H1</span>
+            </Button>
+            <Button
+              variant={editor.isActive('heading', { level: 2 }) ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => formatText('heading-2')}
+              title="Heading 2"
+            >
+              <Type className="w-4 h-4" />
+              <span className="text-xs ml-1">H2</span>
+            </Button>
+            <Button
+              variant={editor.isActive('heading', { level: 3 }) ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => formatText('heading-3')}
+              title="Heading 3"
+            >
+              <Type className="w-4 h-4" />
+              <span className="text-xs ml-1">H3</span>
             </Button>
           </div>
 
