@@ -13,7 +13,7 @@ export interface DocumentState {
   lastSaved: Date | null;
 }
 
-export type PDFMarginType = 'narrow' | 'normal' | 'wide' | 'wider';
+export type PDFMarginType = 'narrower' | 'narrow' | 'normal' | 'wide' | 'wider';
 
 export interface PDFMarginSettings {
   type: PDFMarginType;
@@ -24,10 +24,11 @@ export interface PDFMarginSettings {
 }
 
 const PDF_MARGIN_PRESETS: Record<PDFMarginType, PDFMarginSettings> = {
-  narrow: { type: 'narrow', top: 10, right: 10, bottom: 10, left: 10 },
-  normal: { type: 'normal', top: 20, right: 20, bottom: 20, left: 20 },
-  wide: { type: 'wide', top: 30, right: 30, bottom: 30, left: 30 },
-  wider: { type: 'wider', top: 40, right: 40, bottom: 40, left: 40 },
+  narrower: { type: 'narrower', top: 2, right: 2, bottom: 2, left: 2 },
+  narrow: { type: 'narrow', top: 8, right: 8, bottom: 8, left: 8 },
+  normal: { type: 'normal', top: 15, right: 15, bottom: 15, left: 15 },
+  wide: { type: 'wide', top: 25, right: 25, bottom: 25, left: 25 },
+  wider: { type: 'wider', top: 35, right: 35, bottom: 35, left: 35 },
 };
 
 export function useDocument() {
@@ -226,9 +227,9 @@ export function useDocument() {
     });
   }, [documentState.content, documentState.title, toast]);
 
-  const exportAsPDF = useCallback(async (marginType?: PDFMarginType) => {
+  const exportAsPDF = useCallback(async () => {
     try {
-      const margins = PDF_MARGIN_PRESETS[marginType || pdfMargins];
+      const margins = PDF_MARGIN_PRESETS[pdfMargins];
       const contentWidth = 210 - margins.left - margins.right; // A4 width minus margins
       
       // Create a temporary div with the content for rendering

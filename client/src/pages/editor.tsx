@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { SettingsDialog } from '@/components/settings-dialog';
 
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
@@ -196,21 +197,9 @@ export default function Editor() {
                     <FileText className="w-4 h-4 mr-2" />
                     Export as Text
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportAsPDF('narrow')}>
+                  <DropdownMenuItem onClick={() => exportAsPDF()}>
                     <FileIcon className="w-4 h-4 mr-2" />
-                    PDF - Narrow margins
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportAsPDF('normal')}>
-                    <FileIcon className="w-4 h-4 mr-2" />
-                    PDF - Normal margins
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportAsPDF('wide')}>
-                    <FileIcon className="w-4 h-4 mr-2" />
-                    PDF - Wide margins
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => exportAsPDF('wider')}>
-                    <FileIcon className="w-4 h-4 mr-2" />
-                    PDF - Wider margins
+                    Export as PDF
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={exportAsDocx}>
                     <FileText className="w-4 h-4 mr-2" />
@@ -236,6 +225,12 @@ export default function Editor() {
                 <div className={`w-2 h-2 rounded-full ${currentDocument.isSaving ? 'bg-yellow-500' : 'bg-green-500 animate-pulse'}`} />
                 <span>{currentDocument.isSaving ? 'Saving...' : 'Auto-saved'}</span>
               </div>
+              
+              <SettingsDialog 
+                pdfMargins={pdfMargins}
+                setPdfMargins={setPdfMargins}
+                pdfMarginPresets={pdfMarginPresets}
+              />
             </div>
           </div>
           
