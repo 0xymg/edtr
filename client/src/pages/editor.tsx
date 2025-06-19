@@ -7,9 +7,15 @@ import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
 import { useState } from 'react';
-import { Moon, Sun, Check, X } from 'lucide-react';
+import { Moon, Sun, Check, X, Download, ChevronDown, FileText, FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
@@ -177,6 +183,29 @@ export default function Editor() {
             </div>
             
             <div className="flex items-center space-x-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" title="Export Document">
+                    <Download className="w-4 h-4" />
+                    <ChevronDown className="w-3 h-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={exportAsText}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as Text
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportAsPDF}>
+                    <FileIcon className="w-4 h-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportAsDocx}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as DOCX
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <Button
                 variant="ghost"
                 size="sm"

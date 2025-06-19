@@ -104,28 +104,7 @@ export function Toolbar({
               <Save className="w-4 h-4" />
             </Button>
             
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" title="Export Document">
-                  <Download className="w-4 h-4" />
-                  <ChevronDown className="w-3 h-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={onExport}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Export as Text
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onExportPDF}>
-                  <File className="w-4 h-4 mr-2" />
-                  Export as PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onExportDocx}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Export as DOCX
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+
           </div>
 
           <Separator orientation="vertical" className="h-6" />
