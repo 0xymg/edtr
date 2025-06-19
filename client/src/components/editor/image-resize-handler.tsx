@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Crop, RotateCw, X, Lock, Unlock, ZoomIn, ZoomOut } from 'lucide-react';
+import { Crop, ZoomIn, ZoomOut } from 'lucide-react';
+import { CropDialog } from './crop-dialog';
 
 interface ImageResizeHandlerProps {
   editorRef: React.RefObject<HTMLDivElement>;
@@ -11,6 +12,7 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   const [showControls, setShowControls] = useState(false);
   const [lockAspectRatio, setLockAspectRatio] = useState(true);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
+  const [showCropDialog, setShowCropDialog] = useState(false);
 
   const selectImage = (img: HTMLImageElement) => {
     // Clear previous selection
@@ -88,6 +90,17 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     resizeImage(0.8); // 20% smaller
   };
 
+  const openCropDialog = () => {
+    setShowCropDialog(true);
+  };
+
+  const handleCropComplete = (croppedDataUrl: string) => {
+    if (selectedImage) {
+      selectedImage.src = croppedDataUrl;
+      setShowCropDialog(false);
+    }
+  };
+
   const resetImageSize = () => {
     if (!selectedImage) return;
     
@@ -114,33 +127,53 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     };
   }, [editorRef]);
 
-  if (!showControls || !selectedImage) return null;
-
   return (
-    <div 
-      className="image-controls fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 flex gap-2 z-50"
-      style={{
-        top: `${Math.max(10, toolbarPosition.top)}px`,
-        left: `${Math.max(10, Math.min(toolbarPosition.left, window.innerWidth - 320))}px`
-      }}
-    >
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={makeBigger}
-        title="Make bigger"
-      >
-        <ZoomIn className="h-4 w-4" />
-      </Button>
+    <>
+      {showControls && selectedImage && (
+        <div 
+          className="image-controls fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 flex gap-2 z-50"
+          style={{
+            top: `${Math.max(10, toolbarPosition.top)}px`,
+            left: `${Math.max(10, Math.min(toolbarPosition.left, window.innerWidth - 320))}px`
+          }}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={makeBigger}
+            title="Make bigger"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={makeSmaller}
+            title="Make smaller"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={openCropDialog}
+            title="Crop image"
+          >
+            <Crop className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
       
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={makeSmaller}
-        title="Make smaller"
-      >
-        <ZoomOut className="h-4 w-4" />
-      </Button>
-    </div>
+      {selectedImage && (
+        <CropDialog
+          isOpen={showCropDialog}
+          onClose={() => setShowCropDialog(false)}
+          image={selectedImage}
+          onCropComplete={handleCropComplete}
+        />
+      )}
+    </>
   );
 }
