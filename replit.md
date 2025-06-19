@@ -2,7 +2,7 @@
 
 ## Overview
 
-WordPad Pro is a modern, full-stack text editor application built with React, TypeScript, and Express. It provides a distraction-free writing experience with rich text formatting capabilities, auto-save functionality, and dark/light theme support. The application features a clean, professional interface optimized for focused writing and document creation.
+WordPad Pro is a modern, compact text editor application built with React, TypeScript, and Express. It provides a distraction-free writing experience with rich text formatting capabilities, auto-save functionality, and dark/light theme support. The application features a clean, professional interface with a maximum width of 1200px, optimized for focused writing without file tree or complex navigation.
 
 ## System Architecture
 

@@ -41,8 +41,9 @@ export class MemStorage implements IStorage {
     const id = this.currentId++;
     const now = new Date();
     const document: Document = {
-      ...insertDocument,
       id,
+      title: insertDocument.title || "Untitled Document",
+      content: insertDocument.content || "",
       createdAt: now,
       updatedAt: now,
     };
