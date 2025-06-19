@@ -194,7 +194,7 @@ export default function Editor() {
       </header>
 
       {/* Main Content Container */}
-      <div className="flex-1 flex flex-col pt-4">
+      <div className="flex-1 flex flex-col" style={{ paddingTop: '25px' }}>
         <div className="max-w-[1200px] mx-auto w-full flex-1 flex flex-col">
           
           {/* Integrated Editor Container */}
@@ -221,15 +221,27 @@ export default function Editor() {
             {/* Editor Area - Integrated main section */}
             <EditorArea editor={editor} />
           </div>
+          
+          {/* Tips Section */}
+          <div className="max-w-[1200px] mx-auto w-full px-4 py-3">
+            <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-6 gap-y-1 justify-center">
+              <span>💡 <strong>Tip:</strong> Use Ctrl+1, Ctrl+2, Ctrl+3 for headings</span>
+              <span>⚡ <strong>Auto-save:</strong> Changes saved every 2 seconds</span>
+              <span>🔍 <strong>Find:</strong> Press Ctrl+F to search and replace</span>
+              <span>📁 <strong>Export:</strong> PDF, DOCX, and text formats available</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Status Bar */}
-      <StatusBar
-        stats={stats}
-        documentStatus={currentDocument.isSaving ? 'Saving...' : currentDocument.isDirty ? 'Modified' : 'Saved'}
-        lastSaved={currentDocument.lastSaved}
-      />
+      <div style={{ marginTop: '25px' }}>
+        <StatusBar
+          stats={stats}
+          documentStatus={currentDocument.isSaving ? 'Saving...' : currentDocument.isDirty ? 'Modified' : 'Saved'}
+          lastSaved={currentDocument.lastSaved}
+        />
+      </div>
 
       {/* Find Replace Dialog */}
       <FindReplaceDialog
