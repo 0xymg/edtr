@@ -193,25 +193,31 @@ export default function Editor() {
         </div>
       </header>
 
-      {/* Toolbar */}
-      <Toolbar
-        editor={editor}
-        formatText={formatText}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={undo}
-        onRedo={redo}
-        onNew={newDocument}
-        onOpen={openDocument}
-        onSave={saveDocument}
-        onExport={exportAsText}
-        onExportPDF={exportAsPDF}
-        onExportDocx={exportAsDocx}
-        onFindReplace={() => setFindReplaceOpen(true)}
-      />
+      {/* Main Content Container */}
+      <div className="flex-1 flex flex-col">
+        <div className="max-w-[1200px] mx-auto w-full flex-1 flex flex-col bg-white dark:bg-gray-800">
+          
+          {/* Toolbar */}
+          <Toolbar
+            editor={editor}
+            formatText={formatText}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onUndo={undo}
+            onRedo={redo}
+            onNew={newDocument}
+            onOpen={openDocument}
+            onSave={saveDocument}
+            onExport={exportAsText}
+            onExportPDF={exportAsPDF}
+            onExportDocx={exportAsDocx}
+            onFindReplace={() => setFindReplaceOpen(true)}
+          />
 
-      {/* Editor Area */}
-      <EditorArea editor={editor} />
+          {/* Editor Area */}
+          <EditorArea editor={editor} />
+        </div>
+      </div>
 
       {/* Status Bar */}
       <StatusBar
