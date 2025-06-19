@@ -58,6 +58,9 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   };
 
   const handleClickOutside = (e: Event) => {
+    // Don't clear selection if crop mode is active
+    if (showInlineCrop) return;
+    
     const target = e.target as HTMLElement;
     if (target.tagName !== 'IMG' && !target.closest('.image-controls')) {
       clearSelection();

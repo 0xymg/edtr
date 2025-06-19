@@ -74,7 +74,10 @@ export function InlineCrop({ image, onCropComplete, onCancel }: InlineCropProps)
     const y = (e.clientY - rect.top);
 
     const handle = getHandleAtPosition(x, y);
-    if (!handle) return;
+    if (!handle) {
+      // Don't close if clicking outside handles - just ignore
+      return;
+    }
 
     setActiveHandle(handle);
     setIsDragging(true);
@@ -199,9 +202,19 @@ export function InlineCrop({ image, onCropComplete, onCancel }: InlineCropProps)
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      
+      // Prevent any other click handlers from interfering
+      const preventClicks = (e: Event) => {
+        e.stopPropagation();
+        e.preventDefault();
+      };
+      
+      document.addEventListener('click', preventClicks, true);
+      
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('click', preventClicks, true);
       };
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
