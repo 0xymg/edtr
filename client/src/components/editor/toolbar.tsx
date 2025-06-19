@@ -22,6 +22,7 @@ import {
   Type,
   ChevronDown,
   Minus,
+  Image,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -310,6 +311,38 @@ export function Toolbar({
               title="Align Right"
             >
               <AlignRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <Separator orientation="vertical" className="h-6" />
+
+          {/* Image Upload */}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file && editor) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const src = event.target?.result as string;
+                      if (src) {
+                        editor.chain().focus().setImage({ src }).run();
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                };
+                input.click();
+              }}
+              title="Insert Image"
+            >
+              <Image className="w-4 h-4" />
             </Button>
           </div>
 

@@ -144,6 +144,28 @@
   font-size: 0.875em;
 }
 
+.prose-editor .editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+  display: block;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.prose-editor .editor-image:hover {
+  transform: scale(1.02);
+}
+
+.prose-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+  display: block;
+}
+
 .prose-editor pre {
   background-color: var(--muted);
   padding: 1rem;
