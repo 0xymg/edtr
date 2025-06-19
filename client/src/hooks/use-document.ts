@@ -244,6 +244,17 @@ export function useDocument() {
         (element as HTMLElement).style.textDecoration = 'underline';
       });
       
+      // Style horizontal rules
+      const hrElements = tempDiv.querySelectorAll('hr');
+      hrElements.forEach((element) => {
+        const hrElement = element as HTMLElement;
+        hrElement.style.border = 'none';
+        hrElement.style.borderTop = '2px solid #000000';
+        hrElement.style.margin = '24px 0';
+        hrElement.style.width = '100%';
+        hrElement.style.height = '0';
+      });
+      
       window.document.body.appendChild(tempDiv);
       
       // Wait for styles to be applied
