@@ -57,40 +57,6 @@ export function EditorArea({ editor, pdfMargins = 'normal', pdfMarginPresets }: 
     };
   }, [editor, checkContentHeight]);
 
-  // Generate page elements
-  const pages = Array.from({ length: pageCount }, (_, index) => (
-    <div
-      key={index}
-      className={`page-container ${index === 0 ? 'first-page' : ''}`}
-      style={{
-        minHeight: `${a4Height}px`,
-        marginTop: index === 0 ? '0' : `${mmToPx(margins.top)}px`,
-        marginBottom: `${mmToPx(margins.bottom)}px`,
-        backgroundColor: 'white',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-        position: 'relative'
-      }}
-    >
-      {index > 0 && (
-        <div className="page-number" style={{
-          position: 'absolute',
-          top: '10px',
-          right: '20px',
-          fontSize: '12px',
-          color: '#9ca3af',
-          backgroundColor: 'white',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          border: '1px solid #e5e7eb'
-        }}>
-          Page {index + 1}
-        </div>
-      )}
-    </div>
-  ));
-
   const paddingStyle = {
     paddingTop: `${mmToPx(margins.top)}px`,
     paddingRight: `${mmToPx(margins.right)}px`,
@@ -98,89 +64,116 @@ export function EditorArea({ editor, pdfMargins = 'normal', pdfMarginPresets }: 
     paddingLeft: `${mmToPx(margins.left)}px`,
   };
 
-  // Add CSS for visual page breaks with text flow simulation
+  // Add CSS for true text flow between pages
   useEffect(() => {
     const style = document.createElement('style');
     style.id = 'page-break-styles';
     
-    const pageHeight = a4Height + mmToPx(margins.top) + mmToPx(margins.bottom);
+    const totalPageHeight = a4Height;
+    const gapBetweenPages = mmToPx(margins.top) + mmToPx(margins.bottom);
     
     style.textContent = `
       .prose-editor {
         position: relative;
+        overflow: visible;
       }
       
       .prose-editor .ProseMirror {
-        min-height: ${pageHeight * pageCount}px;
-        background-image: repeating-linear-gradient(
-          to bottom,
-          transparent 0px,
-          transparent ${contentHeight - 20}px,
-          rgba(255, 165, 0, 0.2) ${contentHeight - 20}px,
-          rgba(255, 165, 0, 0.4) ${contentHeight - 10}px,
-          rgba(255, 0, 0, 0.6) ${contentHeight - 5}px,
-          rgba(255, 0, 0, 0.8) ${contentHeight}px,
-          rgba(200, 200, 200, 0.8) ${contentHeight}px,
-          rgba(200, 200, 200, 0.4) ${contentHeight + 10}px,
-          transparent ${contentHeight + 20}px,
-          transparent ${pageHeight}px
-        );
-        background-size: 100% ${pageHeight}px;
-        background-repeat: repeat-y;
+        /* Use CSS columns to create actual text flow between pages */
+        column-count: ${pageCount};
+        column-fill: auto;
+        column-gap: ${gapBetweenPages}px;
+        column-width: auto;
+        
+        /* Set fixed height to force column breaks at page boundaries */
+        height: ${contentHeight}px;
+        overflow: visible;
+        
+        /* Visual page break indicators */
+        background: 
+          repeating-linear-gradient(
+            to right,
+            transparent 0%,
+            transparent calc(${100 / pageCount}% - 1px),
+            rgba(220, 220, 220, 0.8) calc(${100 / pageCount}% - 1px),
+            rgba(220, 220, 220, 0.8) calc(${100 / pageCount}% + 1px),
+            transparent calc(${100 / pageCount}% + 1px),
+            transparent ${100 / pageCount}%
+          ),
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent ${contentHeight - 20}px,
+            rgba(255, 165, 0, 0.2) ${contentHeight - 20}px,
+            rgba(255, 0, 0, 0.4) ${contentHeight - 5}px,
+            rgba(255, 0, 0, 0.6) ${contentHeight}px,
+            transparent ${contentHeight}px
+          );
       }
       
-      /* Add visual page break indicators */
-      .prose-editor .ProseMirror::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 100%;
-        background-image: repeating-linear-gradient(
-          to bottom,
-          transparent 0px,
-          transparent ${contentHeight}px,
-          rgba(200, 200, 200, 0.8) ${contentHeight}px,
-          rgba(200, 200, 200, 0.8) ${contentHeight + 2}px,
-          transparent ${contentHeight + 2}px,
-          transparent ${pageHeight}px
-        );
-        background-size: 100% ${pageHeight}px;
-        pointer-events: none;
-        z-index: 1;
-      }
-      
-      /* Make content flow properly */
-      .prose-editor .ProseMirror > * {
-        position: relative;
-        z-index: 2;
-      }
-      
+      /* Text flow controls */
       .prose-editor .ProseMirror p {
-        line-height: 1.6;
+        break-inside: auto;
+        column-break-inside: auto;
         margin-bottom: 1em;
+        line-height: 1.6;
+        orphans: 2;
+        widows: 2;
       }
       
+      .prose-editor .ProseMirror div {
+        break-inside: auto;
+        column-break-inside: auto;
+      }
+      
+      /* Prevent headers from breaking awkwardly */
       .prose-editor .ProseMirror h1,
       .prose-editor .ProseMirror h2,
       .prose-editor .ProseMirror h3,
       .prose-editor .ProseMirror h4,
       .prose-editor .ProseMirror h5,
       .prose-editor .ProseMirror h6 {
+        break-after: avoid;
+        column-break-after: avoid;
+        break-inside: avoid;
+        column-break-inside: avoid;
         margin-top: 1.5em;
         margin-bottom: 0.5em;
-        line-height: 1.2;
       }
+      
+      /* Lists and blocks */
+      .prose-editor .ProseMirror ul,
+      .prose-editor .ProseMirror ol,
+      .prose-editor .ProseMirror blockquote {
+        break-inside: avoid;
+        column-break-inside: avoid;
+      }
+      
+      /* Single page layout when only one page */
+      ${pageCount === 1 ? `
+        .prose-editor .ProseMirror {
+          column-count: 1;
+          height: auto;
+          min-height: ${contentHeight}px;
+          background: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent ${contentHeight - 20}px,
+            rgba(255, 165, 0, 0.2) ${contentHeight - 20}px,
+            rgba(255, 0, 0, 0.4) ${contentHeight - 5}px,
+            rgba(255, 0, 0, 0.6) ${contentHeight}px,
+            rgba(200, 200, 200, 0.8) ${contentHeight}px,
+            transparent ${contentHeight + 20}px
+          );
+        }
+      ` : ''}
       
       @media print {
         .prose-editor .ProseMirror {
+          column-count: 1 !important;
+          height: auto !important;
           background: none !important;
-          page-break-inside: auto;
-        }
-        
-        .prose-editor .ProseMirror::after {
-          display: none;
+          column-gap: 0 !important;
         }
         
         .prose-editor .ProseMirror > * {
@@ -214,23 +207,14 @@ export function EditorArea({ editor, pdfMargins = 'normal', pdfMarginPresets }: 
   return (
     <div className="flex-1 p-8">
       <div ref={editorRef} className="relative">
-        {/* Background pages */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          {pages}
-        </div>
-        
-        {/* Editor content */}
-        <div className="relative z-10">
-          <EditorContent 
-            editor={editor} 
-            className="prose-editor focus:outline-none"
-            style={{
-              ...paddingStyle,
-              minHeight: `${pageCount * a4Height + (pageCount - 1) * (mmToPx(margins.top) + mmToPx(margins.bottom))}px`,
-              backgroundColor: 'transparent'
-            }}
-          />
-        </div>
+        <EditorContent 
+          editor={editor} 
+          className="prose-editor focus:outline-none"
+          style={{
+            ...paddingStyle,
+            minHeight: `${pageCount * a4Height + (pageCount - 1) * (mmToPx(margins.top) + mmToPx(margins.bottom))}px`
+          }}
+        />
       </div>
     </div>
   );
