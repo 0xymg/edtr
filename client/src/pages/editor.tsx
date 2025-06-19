@@ -3,7 +3,6 @@ import { Toolbar } from '@/components/editor/toolbar';
 import { EditorArea } from '@/components/editor/editor-area';
 import { StatusBar } from '@/components/editor/status-bar';
 import { FindReplaceDialog } from '@/components/editor/find-replace-dialog';
-
 import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
@@ -98,53 +97,6 @@ export default function Editor() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [newDocument, openDocument, saveDocument, undo, redo, formatText]);
 
-  const handleToggleMarkdown = () => {
-    if (editor) {
-      if (isMarkdownMode) {
-        // Converting from markdown to HTML
-        const currentContent = getContent();
-        const htmlContent = markdownToHtml(currentContent);
-        setContent(htmlContent);
-      } else {
-        // Converting from HTML to markdown
-        const htmlContent = getContent();
-        const textContent = editor.getText();
-        
-        // If it's just plain text without formatting, use the text directly
-        if (textContent.trim() === '') {
-          setContent('');
-        } else if (htmlContent === `<p>${textContent}</p>` || htmlContent.replace(/<[^>]*>/g, '') === textContent) {
-          // Simple case: just plain text in paragraphs
-          setContent(textContent);
-        } else {
-          // Complex case: try to convert HTML to markdown
-          const markdownContent = htmlToMarkdown(htmlContent);
-          setContent(markdownContent);
-        }
-      }
-    }
-    toggleMarkdownMode();
-  };
-
-  const handleExportMarkdown = () => {
-    if (editor) {
-      const currentContent = getContent();
-      const markdownContent = isMarkdownMode 
-        ? currentContent 
-        : htmlToMarkdown(currentContent);
-      
-      const blob = new Blob([markdownContent], { type: 'text/markdown' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${currentDocument.title}.md`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -192,21 +144,10 @@ export default function Editor() {
         onSave={saveDocument}
         onExport={exportAsText}
         onFindReplace={() => setFindReplaceOpen(true)}
-        isMarkdownMode={isMarkdownMode}
-        onToggleMarkdown={handleToggleMarkdown}
-        onExportMarkdown={handleExportMarkdown}
       />
 
       {/* Editor Area */}
-      {isMarkdownMode ? (
-        <MarkdownEditor 
-          content={getContent()} 
-          onChange={updateContent}
-          className="flex-1"
-        />
-      ) : (
-        <EditorArea editor={editor} />
-      )}
+      <EditorArea editor={editor} />
 
       {/* Status Bar */}
       <StatusBar
