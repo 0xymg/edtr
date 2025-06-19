@@ -24,11 +24,11 @@ export interface PDFMarginSettings {
 }
 
 const PDF_MARGIN_PRESETS: Record<PDFMarginType, PDFMarginSettings> = {
-  narrower: { type: 'narrower', top: 2, right: 2, bottom: 2, left: 2 },
-  narrow: { type: 'narrow', top: 8, right: 8, bottom: 8, left: 8 },
-  normal: { type: 'normal', top: 15, right: 15, bottom: 15, left: 15 },
-  wide: { type: 'wide', top: 25, right: 25, bottom: 25, left: 25 },
-  wider: { type: 'wider', top: 35, right: 35, bottom: 35, left: 35 },
+  narrower: { type: 'narrower', top: 3, right: 3, bottom: 3, left: 3 },
+  narrow: { type: 'narrow', top: 5, right: 5, bottom: 5, left: 5 },
+  normal: { type: 'normal', top: 8, right: 8, bottom: 8, left: 8 },
+  wide: { type: 'wide', top: 10, right: 10, bottom: 10, left: 10 },
+  wider: { type: 'wider', top: 12, right: 12, bottom: 12, left: 12 },
 };
 
 export function useDocument() {

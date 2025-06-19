@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -69,6 +70,11 @@ export function SettingsDialog({ pdfMargins, setPdfMargins, pdfMarginPresets }: 
             This will be used as the default for PDF exports.
           </div>
         </div>
+        <DialogFooter>
+          <Button onClick={() => setOpen(false)}>
+            Apply
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
