@@ -3,11 +3,10 @@ import { Toolbar } from '@/components/editor/toolbar';
 import { EditorArea } from '@/components/editor/editor-area';
 import { StatusBar } from '@/components/editor/status-bar';
 import { FindReplaceDialog } from '@/components/editor/find-replace-dialog';
-import { MarkdownEditor } from '@/components/editor/markdown-editor';
+
 import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
-import { useMarkdown } from '@/hooks/use-markdown';
 import { useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,6 @@ import { Button } from '@/components/ui/button';
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
   const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText } = useDocument();
-  const { isMarkdownMode, toggleMarkdownMode, htmlToMarkdown, markdownToHtml } = useMarkdown();
   const { editor, stats, formatText, setContent, getContent, clearContent, undo, redo, canUndo, canRedo } = useEditor(
     currentDocument.content,
     updateContent
