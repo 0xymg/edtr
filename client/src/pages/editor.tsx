@@ -135,7 +135,7 @@ export default function Editor() {
           <div className="flex items-center justify-between py-3 mb-6">
             <div className="flex items-center space-x-3">
               <div className="bg-black dark:bg-white text-white dark:text-black px-3 py-1.5 rounded-md font-bold text-lg cursor-pointer hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
-                EDTR
+                EDTR.
               </div>
               
               {isEditingTitle ? (
