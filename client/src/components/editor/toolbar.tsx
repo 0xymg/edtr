@@ -278,33 +278,38 @@ export function Toolbar({
 
           <Separator orientation="vertical" className="h-6" />
 
-          {/* Text Alignment */}
-          <div className="flex items-center space-x-1">
-            <Button
-              variant={editor.isActive({ textAlign: 'left' }) ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => formatText('align-left')}
-              title="Align Left"
-            >
-              <AlignLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={editor.isActive({ textAlign: 'center' }) ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => formatText('align-center')}
-              title="Align Center"
-            >
-              <AlignCenter className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={editor.isActive({ textAlign: 'right' }) ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => formatText('align-right')}
-              title="Align Right"
-            >
-              <AlignRight className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* Text Alignment - Hidden in Markdown Mode */}
+          {!isMarkdownMode && (
+            <div className="flex items-center space-x-1">
+              <Button
+                variant={editor?.isActive({ textAlign: 'left' }) ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => formatText('align-left')}
+                disabled={!editor}
+                title="Align Left"
+              >
+                <AlignLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={editor?.isActive({ textAlign: 'center' }) ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => formatText('align-center')}
+                disabled={!editor}
+                title="Align Center"
+              >
+                <AlignCenter className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={editor?.isActive({ textAlign: 'right' }) ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => formatText('align-right')}
+                disabled={!editor}
+                title="Align Right"
+              >
+                <AlignRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
 
           <Separator orientation="vertical" className="h-6" />
 
