@@ -32,10 +32,10 @@ export function FindReplacePanel({ editor, open, onOpenChange }: FindReplacePane
   const clearHighlights = useCallback(() => {
     if (!editor) return;
     
-    const content = editor.getHTML();
-    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
-    if (cleanContent !== content) {
-      editor.commands.setContent(cleanContent);
+    // Remove any active selection highlighting
+    const { selection } = editor.state;
+    if (!selection.empty) {
+      editor.commands.setTextSelection(selection.from);
     }
     
     // Remove the style element
@@ -53,59 +53,70 @@ export function FindReplacePanel({ editor, open, onOpenChange }: FindReplacePane
       return;
     }
 
-    // Get clean content first
-    const content = editor.getHTML();
-    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
-    
+    const textContent = editor.getText();
     const searchFlags = matchCase ? 'g' : 'gi';
     const escapedText = searchText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = wholeWords ? `\\b${escapedText}\\b` : escapedText;
     
     try {
       const regex = new RegExp(pattern, searchFlags);
-      const matches = cleanContent.match(regex);
+      const matches = textContent.match(regex);
       
       if (matches && matches.length > 0) {
         setTotalMatches(matches.length);
         
-        // Add CSS for highlighting
+        // Add visual feedback with CSS
         const styleEl = document.getElementById('find-highlight-style') || document.createElement('style');
         styleEl.id = 'find-highlight-style';
         styleEl.innerHTML = `
-          .ProseMirror mark.find-highlight {
-            background-color: #fef08a !important;
-            color: #000000 !important;
-            padding: 1px 2px;
-            border-radius: 2px;
-          }
-          .ProseMirror mark.find-highlight.current {
+          .ProseMirror .selection {
             background-color: #eab308 !important;
-            font-weight: 600;
           }
         `;
         if (!document.head.contains(styleEl)) {
           document.head.appendChild(styleEl);
         }
         
-        // Highlight all matches
-        let highlightedContent = cleanContent;
-        let matchIndex = 0;
+        // Find positions in the document
+        let searchResults: { from: number; to: number }[] = [];
+        const doc = editor.state.doc;
         
-        highlightedContent = highlightedContent.replace(regex, (match) => {
-          const className = matchIndex === currentMatchIndex ? 'find-highlight current' : 'find-highlight';
-          matchIndex++;
-          return `<mark class="${className}">${match}</mark>`;
+        doc.descendants((node, nodePos) => {
+          if (node.isText && node.text) {
+            const text = node.text;
+            const nodeRegex = new RegExp(pattern, searchFlags);
+            let match;
+            
+            while ((match = nodeRegex.exec(text)) !== null) {
+              const startPos = nodePos + match.index;
+              const endPos = startPos + match[0].length;
+              searchResults.push({ from: startPos, to: endPos });
+              
+              if (!searchFlags.includes('g')) break;
+            }
+          }
         });
         
-        editor.commands.setContent(highlightedContent);
-        
-        // Scroll to current match
-        setTimeout(() => {
-          const currentMark = document.querySelector('mark.find-highlight.current');
-          if (currentMark) {
-            currentMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
+        // Select the current match
+        if (searchResults[currentMatchIndex]) {
+          const match = searchResults[currentMatchIndex];
+          editor.commands.setTextSelection({ from: match.from, to: match.to });
+          
+          // Scroll to selection
+          setTimeout(() => {
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+              const range = selection.getRangeAt(0);
+              const rect = range.getBoundingClientRect();
+              if (rect.top < 100 || rect.bottom > window.innerHeight - 100) {
+                range.startContainer.parentElement?.scrollIntoView({ 
+                  behavior: 'smooth', 
+                  block: 'center' 
+                });
+              }
+            }
+          }, 100);
+        }
       } else {
         setTotalMatches(0);
         setCurrentMatchIndex(0);
@@ -159,59 +170,51 @@ export function FindReplacePanel({ editor, open, onOpenChange }: FindReplacePane
   const replace = useCallback(() => {
     if (!editor || !findText.trim() || totalMatches === 0) return;
 
-    // Get clean content
-    const content = editor.getHTML();
-    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
+    const { selection } = editor.state;
+    if (selection.empty) return;
     
-    const searchFlags = matchCase ? '' : 'i';
-    const escapedText = findText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = wholeWords ? `\\b${escapedText}\\b` : escapedText;
+    // Replace the selected text
+    editor.commands.deleteSelection();
+    editor.commands.insertContent(replaceText);
     
-    try {
-      const regex = new RegExp(pattern, searchFlags);
-      const newContent = cleanContent.replace(regex, replaceText);
-      
-      if (newContent !== cleanContent) {
-        editor.commands.setContent(newContent);
-        setCurrentMatchIndex(0);
-        setTimeout(() => {
-          if (findText.trim()) {
-            highlightMatches(findText);
-          }
-        }, 100);
-        
-        toast({
-          title: "Replaced",
-          description: `Replaced one occurrence of "${findText}"`,
-        });
+    // Update search after replacement
+    setCurrentMatchIndex(0);
+    setTimeout(() => {
+      if (findText.trim()) {
+        highlightMatches(findText);
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Invalid search pattern.",
-        variant: "destructive",
-      });
-    }
-  }, [editor, findText, replaceText, matchCase, wholeWords, totalMatches, highlightMatches, toast]);
+    }, 100);
+    
+    toast({
+      title: "Replaced",
+      description: `Replaced one occurrence of "${findText}"`,
+    });
+  }, [editor, findText, replaceText, totalMatches, highlightMatches, toast]);
 
   const replaceAll = useCallback(() => {
     if (!editor || !findText.trim() || totalMatches === 0) return;
 
-    // Get clean content
-    const content = editor.getHTML();
-    const cleanContent = content.replace(/<mark[^>]*class="[^"]*find-highlight[^"]*"[^>]*>/g, '').replace(/<\/mark>/g, '');
-    
+    const textContent = editor.getText();
     const searchFlags = matchCase ? 'g' : 'gi';
     const escapedText = findText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = wholeWords ? `\\b${escapedText}\\b` : escapedText;
     
     try {
       const regex = new RegExp(pattern, searchFlags);
-      const matches = cleanContent.match(regex);
-      const newContent = cleanContent.replace(regex, replaceText);
+      const matches = textContent.match(regex);
       
-      if (newContent !== cleanContent && matches) {
-        editor.commands.setContent(newContent);
+      if (matches && matches.length > 0) {
+        // Use TipTap's command to replace all text content
+        const newContent = textContent.replace(regex, replaceText);
+        
+        // Get current HTML and preserve formatting while replacing text
+        const currentHTML = editor.getHTML();
+        const updatedHTML = currentHTML.replace(
+          new RegExp(escapedText, searchFlags),
+          replaceText
+        );
+        
+        editor.commands.setContent(updatedHTML);
         clearHighlights();
         setTotalMatches(0);
         setCurrentMatchIndex(0);
