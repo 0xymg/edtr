@@ -227,12 +227,8 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
   const handleMouseUp = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // Add a small delay to ensure the drag state is properly reset
-    setTimeout(() => {
-      setIsDragging(false);
-      setActiveHandle(null);
-    }, 10);
+    setIsDragging(false);
+    setActiveHandle(null);
   }, []);
 
   const getCursorStyle = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -298,28 +294,23 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
     onClose();
   };
 
+  // Completely disable dialog closing during any interaction
+  const handleDialogChange = useCallback((open: boolean) => {
+    // Never allow the dialog to close automatically
+    if (!open) {
+      return;
+    }
+  }, []);
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      // Prevent closing if currently dragging
-      if (!open && isDragging) {
-        return;
-      }
-      if (!open) {
-        onClose();
-      }
-    }}>
+    <Dialog open={isOpen} onOpenChange={handleDialogChange}>
       <DialogContent 
         className="max-w-2xl" 
-        onPointerDownOutside={(e) => {
-          if (isDragging) {
-            e.preventDefault();
-          }
-        }}
-        onInteractOutside={(e) => {
-          if (isDragging) {
-            e.preventDefault();
-          }
-        }}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>Crop Image</DialogTitle>
@@ -343,11 +334,22 @@ export function CropDialog({ isOpen, onClose, image, onCropComplete }: CropDialo
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button 
+            variant="outline" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+          >
             <X className="h-4 w-4 mr-2" />
             Cancel
           </Button>
-          <Button onClick={handleCrop}>
+          <Button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCrop();
+            }}
+          >
             <Check className="h-4 w-4 mr-2" />
             Apply Crop
           </Button>
