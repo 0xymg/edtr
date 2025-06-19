@@ -12,9 +12,9 @@ import { Button } from '@/components/ui/button';
 
 export default function Editor() {
   const { theme, toggleTheme } = useTheme();
-  const { document, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText } = useDocument();
+  const { document: currentDocument, updateContent, updateTitle, newDocument, openDocument, saveDocument, exportAsText } = useDocument();
   const { editor, stats, formatText, setContent, getContent, clearContent, undo, redo, canUndo, canRedo } = useEditor(
-    document.content,
+    currentDocument.content,
     updateContent
   );
   
@@ -22,10 +22,10 @@ export default function Editor() {
 
   // Update editor content when document changes
   useEffect(() => {
-    if (editor && document.content !== getContent()) {
-      setContent(document.content);
+    if (editor && currentDocument.content !== getContent()) {
+      setContent(currentDocument.content);
     }
-  }, [document.content, editor, setContent, getContent]);
+  }, [currentDocument.content, editor, setContent, getContent]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -89,11 +89,11 @@ export default function Editor() {
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">WordPad Pro</h1>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {document.title}
+              {currentDocument.title}
             </span>
           </div>
           
@@ -112,8 +112,8 @@ export default function Editor() {
             </Button>
             
             <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-              <div className={`w-2 h-2 rounded-full ${document.isSaving ? 'bg-yellow-500' : 'bg-green-500 animate-pulse'}`} />
-              <span>{document.isSaving ? 'Saving...' : 'Auto-saved'}</span>
+              <div className={`w-2 h-2 rounded-full ${currentDocument.isSaving ? 'bg-yellow-500' : 'bg-green-500 animate-pulse'}`} />
+              <span>{currentDocument.isSaving ? 'Saving...' : 'Auto-saved'}</span>
             </div>
           </div>
         </div>
@@ -140,8 +140,8 @@ export default function Editor() {
       {/* Status Bar */}
       <StatusBar
         stats={stats}
-        documentStatus={document.isSaving ? 'Saving...' : document.isDirty ? 'Modified' : 'Saved'}
-        lastSaved={document.lastSaved}
+        documentStatus={currentDocument.isSaving ? 'Saving...' : currentDocument.isDirty ? 'Modified' : 'Saved'}
+        lastSaved={currentDocument.lastSaved}
       />
 
       {/* Find Replace Dialog */}

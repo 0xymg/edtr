@@ -80,7 +80,7 @@ export function Toolbar({
 
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="flex items-center space-x-1 flex-wrap gap-y-2">
           
           {/* File Operations */}
