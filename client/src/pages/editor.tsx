@@ -134,7 +134,7 @@ export default function Editor() {
           {/* Header Content - Now inside wrapper */}
           <div className="flex items-center justify-between py-3 mb-6">
             <div className="flex items-center space-x-3">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">WordPad Pro</h1>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">EDTR</h1>
               
               {isEditingTitle ? (
                 <div className="flex items-center space-x-2">
