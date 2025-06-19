@@ -291,6 +291,107 @@ export function useDocument() {
     });
   }, [documentState.content, documentState.title, toast]);
 
+  const exportAsMarkdown = useCallback(() => {
+    // Create a temporary div to parse HTML content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = documentState.content;
+
+    // Function to convert HTML nodes to markdown
+    const htmlToMarkdown = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent || '';
+      }
+
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        const tagName = element.tagName.toLowerCase();
+        const childContent = Array.from(element.childNodes)
+          .map(child => htmlToMarkdown(child))
+          .join('');
+
+        switch (tagName) {
+          case 'h1':
+            return `# ${childContent}\n\n`;
+          case 'h2':
+            return `## ${childContent}\n\n`;
+          case 'h3':
+            return `### ${childContent}\n\n`;
+          case 'h4':
+            return `#### ${childContent}\n\n`;
+          case 'h5':
+            return `##### ${childContent}\n\n`;
+          case 'h6':
+            return `###### ${childContent}\n\n`;
+          case 'p':
+            if (childContent.trim() === '') return '\n';
+            return `${childContent}\n\n`;
+          case 'strong':
+          case 'b':
+            return `**${childContent}**`;
+          case 'em':
+          case 'i':
+            return `*${childContent}*`;
+          case 'u':
+            return `<u>${childContent}</u>`;
+          case 'br':
+            return '\n';
+          case 'ul':
+            return `${childContent}\n`;
+          case 'ol':
+            return `${childContent}\n`;
+          case 'li':
+            const parentTag = element.parentElement?.tagName.toLowerCase();
+            const prefix = parentTag === 'ol' ? '1. ' : '- ';
+            return `${prefix}${childContent}\n`;
+          case 'blockquote':
+            return childContent.split('\n').map(line => `> ${line}`).join('\n') + '\n\n';
+          case 'code':
+            return `\`${childContent}\``;
+          case 'pre':
+            return `\`\`\`\n${childContent}\n\`\`\`\n\n`;
+          case 'a':
+            const href = element.getAttribute('href');
+            return href ? `[${childContent}](${href})` : childContent;
+          case 'img':
+            const src = element.getAttribute('src');
+            const alt = element.getAttribute('alt') || '';
+            return src ? `![${alt}](${src})` : '';
+          case 'hr':
+            return '---\n\n';
+          default:
+            return childContent;
+        }
+      }
+
+      return '';
+    };
+
+    // Convert HTML to markdown
+    let markdownContent = Array.from(tempDiv.childNodes)
+      .map(node => htmlToMarkdown(node))
+      .join('');
+
+    // Clean up extra newlines
+    markdownContent = markdownContent.replace(/\n{3,}/g, '\n\n');
+    markdownContent = markdownContent.trim();
+
+    // Add title as main heading if content doesn't start with a heading
+    const finalContent = `# ${documentState.title}\n\n${markdownContent}`;
+
+    const blob = new Blob([finalContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = window.document.createElement('a');
+    a.href = url;
+    a.download = `${documentState.title}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Document Exported",
+      description: `Exported as ${documentState.title}.md`,
+    });
+  }, [documentState.content, documentState.title, toast]);
+
   const exportAsPDF = useCallback(async () => {
     try {
       const margins = PDF_MARGIN_PRESETS[pdfMargins];
@@ -648,6 +749,7 @@ export function useDocument() {
     saveDocument,
     exportAsText,
     exportAsHTML,
+    exportAsMarkdown,
     exportAsPDF,
     exportAsDocx,
     autoSave,
