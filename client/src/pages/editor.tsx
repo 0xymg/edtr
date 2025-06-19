@@ -181,18 +181,13 @@ export default function Editor() {
             <div className="flex items-center space-x-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" title="Import/Export Document">
+                  <Button variant="ghost" size="sm" title="Export Document">
                     <Download className="w-4 h-4 mr-2" />
-                    File
+                    Download
                     <ChevronDown className="w-3 h-3 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={importFromMarkdown}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Import Markdown
-                  </DropdownMenuItem>
-                  <hr className="my-1" />
                   <DropdownMenuItem onClick={exportAsText}>
                     <FileText className="w-4 h-4 mr-2" />
                     Export as Text
@@ -255,6 +250,7 @@ export default function Editor() {
                 onRedo={redo}
                 onNew={newDocument}
                 onOpen={openDocument}
+                onImportMarkdown={importFromMarkdown}
                 onSave={saveDocument}
                 onExport={exportAsText}
                 onExportPDF={exportAsPDF}
