@@ -39,6 +39,13 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     if (selectedImage) {
       selectedImage.style.outline = '';
       selectedImage.style.outlineOffset = '';
+      
+      // Also remove outline from crop wrapper if it exists
+      const cropWrapper = selectedImage.parentElement;
+      if (cropWrapper && cropWrapper.classList.contains('crop-wrapper')) {
+        cropWrapper.style.outline = '';
+        cropWrapper.style.outlineOffset = '';
+      }
     }
     setSelectedImage(null);
     setShowControls(false);
@@ -83,16 +90,35 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   const cropImage = () => {
     if (!selectedImage) return;
     
-    // Create a more sophisticated crop effect by adjusting both dimensions and using object-fit
+    // Create a proper crop by using a wrapper with overflow hidden
     const currentWidth = selectedImage.offsetWidth;
     const currentHeight = selectedImage.offsetHeight;
     
-    // Crop by reducing size by 20% on each side (effectively 60% of original)
-    const newWidth = Math.max(50, currentWidth * 0.7);
-    const newHeight = Math.max(50, currentHeight * 0.7);
+    // Create crop wrapper if it doesn't exist
+    let cropWrapper = selectedImage.parentElement;
+    if (!cropWrapper || !cropWrapper.classList.contains('crop-wrapper')) {
+      cropWrapper = document.createElement('div');
+      cropWrapper.className = 'crop-wrapper';
+      cropWrapper.style.cssText = `
+        display: inline-block;
+        overflow: hidden;
+        border-radius: 8px;
+      `;
+      
+      selectedImage.parentNode?.insertBefore(cropWrapper, selectedImage);
+      cropWrapper.appendChild(selectedImage);
+    }
     
-    selectedImage.style.width = `${newWidth}px`;
-    selectedImage.style.height = `${newHeight}px`;
+    // Apply crop by reducing the wrapper size but keeping image larger
+    const cropWidth = Math.max(50, currentWidth * 0.8);
+    const cropHeight = Math.max(50, currentHeight * 0.8);
+    
+    cropWrapper.style.width = `${cropWidth}px`;
+    cropWrapper.style.height = `${cropHeight}px`;
+    
+    // Keep the image larger than the wrapper to create crop effect
+    selectedImage.style.width = `${currentWidth}px`;
+    selectedImage.style.height = `${currentHeight}px`;
     selectedImage.style.objectFit = 'cover';
     selectedImage.style.objectPosition = 'center';
   };
@@ -100,6 +126,14 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
   const resetImageSize = () => {
     if (!selectedImage) return;
     
+    // Remove crop wrapper if it exists
+    const cropWrapper = selectedImage.parentElement;
+    if (cropWrapper && cropWrapper.classList.contains('crop-wrapper')) {
+      cropWrapper.parentNode?.insertBefore(selectedImage, cropWrapper);
+      cropWrapper.remove();
+    }
+    
+    // Reset all image styles
     selectedImage.style.width = '';
     selectedImage.style.height = '';
     selectedImage.style.maxWidth = '100%';
