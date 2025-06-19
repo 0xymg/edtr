@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Toolbar } from '@/components/editor/toolbar';
 import { EditorArea } from '@/components/editor/editor-area';
 import { StatusBar } from '@/components/editor/status-bar';
-import { FindReplacePanel } from '@/components/editor/find-replace-panel';
+
 import { useTheme } from '@/components/theme-provider';
 import { useEditor } from '@/hooks/use-editor';
 import { useDocument } from '@/hooks/use-document';
@@ -26,7 +26,7 @@ export default function Editor() {
     updateContent
   );
   
-  const [findReplaceOpen, setFindReplaceOpen] = useState(false);
+
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editingTitle, setEditingTitle] = useState('');
 
@@ -79,10 +79,7 @@ export default function Editor() {
             e.preventDefault();
             saveDocument();
             break;
-          case 'f':
-            e.preventDefault();
-            setFindReplaceOpen(true);
-            break;
+
           case 'z':
             if (e.shiftKey) {
               e.preventDefault();
@@ -123,9 +120,7 @@ export default function Editor() {
         }
       }
       
-      if (e.key === 'Escape') {
-        setFindReplaceOpen(false);
-      }
+
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -251,7 +246,7 @@ export default function Editor() {
                 onExport={exportAsText}
                 onExportPDF={exportAsPDF}
                 onExportDocx={exportAsDocx}
-                onFindReplace={() => setFindReplaceOpen(true)}
+
               />
             </div>
 
@@ -297,12 +292,7 @@ export default function Editor() {
         />
       </div>
 
-      {/* Find Replace Panel */}
-      <FindReplacePanel
-        editor={editor}
-        open={findReplaceOpen}
-        onOpenChange={setFindReplaceOpen}
-      />
+
     </div>
   );
 }

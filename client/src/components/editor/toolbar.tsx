@@ -40,7 +40,7 @@ interface ToolbarProps {
   onExport: () => void;
   onExportPDF: () => Promise<void>;
   onExportDocx: () => Promise<void>;
-  onFindReplace: () => void;
+
 }
 
 const fontFamilies = [
@@ -75,7 +75,6 @@ export function Toolbar({
   onExport,
   onExportPDF,
   onExportDocx,
-  onFindReplace,
 }: ToolbarProps) {
   const [selectedColor, setSelectedColor] = useState('#000000');
 
@@ -303,12 +302,7 @@ export function Toolbar({
 
           <Separator orientation="vertical" className="h-6" />
 
-          {/* Find & Replace */}
-          <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="sm" onClick={onFindReplace} title="Find & Replace (Ctrl+F)">
-              <Search className="w-4 h-4" />
-            </Button>
-          </div>
+
         </div>
       </div>
   );
