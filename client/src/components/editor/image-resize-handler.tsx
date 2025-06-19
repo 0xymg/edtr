@@ -39,13 +39,6 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     if (selectedImage) {
       selectedImage.style.outline = '';
       selectedImage.style.outlineOffset = '';
-      
-      // Also remove outline from crop wrapper if it exists
-      const cropWrapper = selectedImage.parentElement;
-      if (cropWrapper && cropWrapper.classList.contains('crop-wrapper')) {
-        cropWrapper.style.outline = '';
-        cropWrapper.style.outlineOffset = '';
-      }
     }
     setSelectedImage(null);
     setShowControls(false);
@@ -87,53 +80,18 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
     selectedImage.style.height = `${Math.max(50, newHeight)}px`;
   };
 
-  const cropImage = () => {
-    if (!selectedImage) return;
-    
-    // Create a proper crop by using a wrapper with overflow hidden
-    const currentWidth = selectedImage.offsetWidth;
-    const currentHeight = selectedImage.offsetHeight;
-    
-    // Create crop wrapper if it doesn't exist
-    let cropWrapper = selectedImage.parentElement;
-    if (!cropWrapper || !cropWrapper.classList.contains('crop-wrapper')) {
-      cropWrapper = document.createElement('div');
-      cropWrapper.className = 'crop-wrapper';
-      cropWrapper.style.cssText = `
-        display: inline-block;
-        overflow: hidden;
-        border-radius: 8px;
-      `;
-      
-      selectedImage.parentNode?.insertBefore(cropWrapper, selectedImage);
-      cropWrapper.appendChild(selectedImage);
-    }
-    
-    // Apply crop by reducing the wrapper size but keeping image larger
-    const cropWidth = Math.max(50, currentWidth * 0.8);
-    const cropHeight = Math.max(50, currentHeight * 0.8);
-    
-    cropWrapper.style.width = `${cropWidth}px`;
-    cropWrapper.style.height = `${cropHeight}px`;
-    
-    // Keep the image larger than the wrapper to create crop effect
-    selectedImage.style.width = `${currentWidth}px`;
-    selectedImage.style.height = `${currentHeight}px`;
-    selectedImage.style.objectFit = 'cover';
-    selectedImage.style.objectPosition = 'center';
+  const makeBigger = () => {
+    resizeImage(1.2); // 20% bigger
+  };
+
+  const makeSmaller = () => {
+    resizeImage(0.8); // 20% smaller
   };
 
   const resetImageSize = () => {
     if (!selectedImage) return;
     
-    // Remove crop wrapper if it exists
-    const cropWrapper = selectedImage.parentElement;
-    if (cropWrapper && cropWrapper.classList.contains('crop-wrapper')) {
-      cropWrapper.parentNode?.insertBefore(selectedImage, cropWrapper);
-      cropWrapper.remove();
-    }
-    
-    // Reset all image styles
+    // Reset all image styles to original
     selectedImage.style.width = '';
     selectedImage.style.height = '';
     selectedImage.style.maxWidth = '100%';
@@ -178,8 +136,8 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => resizeImage(1.2)}
-        title="Enlarge image"
+        onClick={makeBigger}
+        title="Make bigger"
       >
         <ZoomIn className="h-4 w-4" />
       </Button>
@@ -187,19 +145,10 @@ export function ImageResizeHandler({ editorRef }: ImageResizeHandlerProps) {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => resizeImage(0.8)}
-        title="Shrink image"
+        onClick={makeSmaller}
+        title="Make smaller"
       >
         <ZoomOut className="h-4 w-4" />
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={cropImage}
-        title="Crop image"
-      >
-        <Crop className="h-4 w-4" />
       </Button>
       
       <Button
